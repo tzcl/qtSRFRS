@@ -16,11 +16,18 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_login_clicked();
+    void on_btn_login_clicked();
 
-    void on_logout_clicked();
+    void on_btn_logout_clicked();
+
+    void on_btn_create_clicked();
+
+    void on_btn_signin_clicked();
 
 private:
+    void loginInitUI();
+    void mainInitUI();
+
     Ui::MainWindow *ui;
     QString username;
 };
