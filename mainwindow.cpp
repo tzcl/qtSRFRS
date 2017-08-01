@@ -5,9 +5,8 @@
 
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
-#include <QRegExp>
-
-#include <QDebug>
+#include <QPropertyAnimation>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -23,11 +22,6 @@ MainWindow::MainWindow(QWidget *parent) :
     loginInitUI();
 
     mainInitUI();
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }
 
 void MainWindow::loginInitUI()
@@ -54,7 +48,7 @@ void MainWindow::loginInitUI()
     effect->setYOffset(5);
     ui->loginStacked->setGraphicsEffect(effect);
 
-    // setup first page of loginStacked
+    // position groupbox elements
     int elementWidth = lsWidth - (padding / 2), elementHeight = 50;
     centerX = lsWidth / 2;  // update center to be relative to groupbox
 
@@ -83,7 +77,7 @@ void MainWindow::loginInitUI()
     // give username input focus
     ui->txt_username->setFocus();
 
-    // setup second page of loginStacked
+    // position second page of loginStacked
 
     // same elementWidth, height and centerX as before
     ui->txt_register_username->setFixedSize(elementWidth, elementHeight);
@@ -115,6 +109,12 @@ void MainWindow::mainInitUI()
     ui->btn_logout->setIcon(QIcon(":/icons/power-off.png"));
 }
 
+void MainWindow::mainInitUI()
+{
+    ui->btn_settings->setIcon(QIcon(":/icons/cogs.png"));
+    ui->btn_logout->setIcon(QIcon(":/icons/power-off.png"));
+}
+
 void MainWindow::toggleButtonState(QPushButton *button, bool state) {
     button->setEnabled(state);
 }
@@ -129,94 +129,28 @@ void MainWindow::moveToLogin() {
     ui->btn_login->setEnabled(false);
 }
 
-void MainWindow::moveToRegister() {
-    ui->txt_register_username->clear();
-    ui->txt_register_password->clear();
-    ui->txt_register_username->setFocus();
-
-    ui->stackedWidget->setCurrentIndex(0);
-    ui->loginStacked->setCurrentIndex(1);
-    ui->btn_register->setEnabled(false);
-}
-
-SRFRS::AccountManager MainWindow::getAccountManager() {
-    return accountManager;
-}
-
-QString MainWindow::getUsername() {
-    return ui->lbl_username->text();
-}
-
 void MainWindow::on_btn_login_clicked()
 {
-    QString username = ui->txt_username->text();
-    QString password = ui->txt_password->text();
-
-    // reset login page
-    ui->txt_username->clear();
-    ui->txt_password->clear();
-    ui->txt_username->setFocus();
-    ui->btn_login->setEnabled(false);
-
-    // validate inputs, username or password cannot be empty
-    if(accountManager.validLogin(username, password)) {
-
-        // move to mainPage
-        ui->stackedWidget->setCurrentIndex(1);
-        ui->tabWidget->setCurrentIndex(0);
-        ui->tabWidget->setFocus();
+    // want to transition to main page
+    QMessageBox::information(this, "Login Test", "Login successful? :-)");
 
         // set username label
         ui->lbl_username->setText(username);
 
-    } else {
+    ui->lbl_username->setText(ui->txt_username->text());
+    ui->tabWidget->setFocus();
 
-        // login failed, tell user
-        if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Your username or password was wrong :-(\nDo you need to create an account?", QMessageBox::Yes|QMessageBox::No).exec())
-        {
-            moveToRegister();
-        }
-    }
+    // clear lineEdits?
 }
 
 void MainWindow::on_btn_logout_clicked()
 {
-    // logout stuff here
     if (QMessageBox::Yes == QMessageBox(QMessageBox::Question, "SRFRS", "Are you sure you want to log out?", QMessageBox::Yes|QMessageBox::No).exec())
     {
-        moveToLogin();
-    }
-}
-
-void MainWindow::on_btn_create_clicked()
-{
-    moveToRegister();
-}
-
-void MainWindow::on_btn_signin_clicked()
-{
-    moveToLogin();
-}
-
-void MainWindow::on_btn_register_clicked()
-{
-    QString username = ui->txt_register_username->text();
-    QString password = ui->txt_register_password->text();
-    QRegExp whitespace("\\s");
-
-    moveToRegister();
-
-    // test to see whether username/password has whitespace
-    if(username.contains(whitespace) || password.contains(whitespace)) {
-
-        QMessageBox::warning(this, "SRFRS", "Your username or password cannot have spaces.");
-
-    } else if(username == "" || password == "") {
-
-        // check if either username or password are empty
-        QMessageBox::warning(this, "SRFRS", "Your username or password cannot be empty.");
-
-    } else {
+        // clean up log in form
+        ui->txt_username->clear();
+        ui->txt_password->clear();
+        ui->txt_username->setFocus();
 
         // see if registration successful
         if(accountManager.registerUser(username, password)) {
@@ -233,29 +167,16 @@ void MainWindow::on_btn_register_clicked()
     }
 }
 
-// toggle login/register buttons if inputs are empty
-void MainWindow::on_txt_username_textEdited(const QString &arg1)
+void MainWindow::on_btn_create_clicked()
 {
-    toggleButtonState(ui->btn_login, arg1 != "" && ui->txt_password->text() != "");
+    // clear inputs?
+    ui->loginStacked->setCurrentIndex(1);
+    ui->txt_register_username->setFocus();
 }
 
-void MainWindow::on_txt_password_textEdited(const QString &arg1)
+void MainWindow::on_btn_signin_clicked()
 {
-    toggleButtonState(ui->btn_login, arg1 != "" && ui->txt_username->text() != "");
-}
-
-void MainWindow::on_txt_register_username_textEdited(const QString &arg1)
-{
-    toggleButtonState(ui->btn_register, arg1 != "" && ui->txt_register_password->text() != "");
-}
-
-void MainWindow::on_txt_register_password_textEdited(const QString &arg1)
-{
-    toggleButtonState(ui->btn_register, arg1 != "" && ui->txt_register_password->text() != "");
-}
-
-void MainWindow::on_btn_settings_clicked()
-{
-    Settings settings(this);
-    settings.exec();
+    // clear inputs?
+    ui->txt_username->setFocus();
+    ui->loginStacked->setCurrentIndex(0);
 }

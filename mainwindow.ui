@@ -137,9 +137,6 @@ color: white; background: transparent;
       </property>
      </widget>
      <widget class="QStackedWidget" name="loginStacked">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
       <property name="geometry">
        <rect>
         <x>269</x>
@@ -159,7 +156,17 @@ background: white;
       </property>
       <widget class="QWidget" name="loginBox">
        <property name="styleSheet">
-        <string notr="true">QLineEdit {
+        <string notr="true">QPushButton#btn_login {
+color: white;
+background: #4CAF50;
+border-radius: 0px;
+}
+
+QPushButton#btn_login:hover {
+background: #43A047
+}
+
+QLineEdit {
 outline: 0;
 background: #f2f2f2;
 padding-left: 8px;
@@ -171,7 +178,6 @@ font-size: 14px;
 }
 
 QPushButton#btn_create {
-background: 0;
 color: #4CAF50;
 font-size: 14px;
 border-radius: 0px;
@@ -198,9 +204,6 @@ border-radius: 0px;
         </property>
        </widget>
        <widget class="QPushButton" name="btn_login">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="geometry">
          <rect>
           <x>100</x>
@@ -257,7 +260,17 @@ border-radius: 0px;
       </widget>
       <widget class="QWidget" name="createBox">
        <property name="styleSheet">
-        <string notr="true">QLineEdit {
+        <string notr="true">QPushButton#btn_register {
+color: white;
+background: #4CAF50;
+border-radius: 0px;
+}
+
+QPushButton#btn_register:hover {
+background: #43A047
+}
+
+QLineEdit {
 outline: 0;
 background: #f2f2f2;
 padding-left: 8px;
@@ -269,16 +282,12 @@ font-size: 14px;
 }
 
 QPushButton#btn_signin {
-background: 0;
 color: #4CAF50;
 font-size: 14px;
 border-radius: 0px;
 }</string>
        </property>
        <widget class="QPushButton" name="btn_register">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="geometry">
          <rect>
           <x>130</x>

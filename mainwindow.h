@@ -49,35 +49,9 @@ private slots:
 
     void on_btn_signin_clicked();
 
-    void on_btn_register_clicked();
-
-    void on_txt_password_textEdited(const QString &arg1);
-
-    void on_txt_username_textEdited(const QString &arg1);
-
-    void on_txt_register_username_textEdited(const QString &arg1);
-
-    void on_txt_register_password_textEdited(const QString &arg1);
-
-    void on_btn_settings_clicked();
-
 private:
-    /**
-     * @brief loginInitUI: Initialise UI components for the login screen.
-     */
     void loginInitUI();
-
-    /**
-     * @brief mainInitUI: Initialise UI components for the main screen.
-     */
     void mainInitUI();
-
-    /**
-     * @brief toggleButtonState: Toggle the state of the given button to be enabled or disabled.
-     * @param button: The button to toggle.
-     * @param state: The state to toggle the button to.
-     */
-    void toggleButtonState(QPushButton *button, bool state);
 
     Ui::MainWindow *ui;
     SRFRS::AccountManager accountManager;

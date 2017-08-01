@@ -25,8 +25,7 @@ HEADERS += \
     settings.h
 
 FORMS += \
-        mainwindow.ui \
-    settings.ui
+        mainwindow.ui
 
 RESOURCES += \
     res.qrc
