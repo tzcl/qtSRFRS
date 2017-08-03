@@ -2,6 +2,7 @@
 #define ACCOUNTMANAGER_H
 
 #include <QString>
+#include <QDir>
 
 namespace SRFRS {
 class AccountManager;
@@ -21,7 +22,7 @@ public:
     bool validLogin(QString username, QString password);
 
     /**
-     * @brief registerUser: try to create new user, username must be unique
+     * @brief registerUser: try to create new user, username must be unique. Assumes that the raw inputs are validated.
      * @param username: new user username, must be unique
      * @param password: new user password
      * @return: true if registered successfully, false otherwise
@@ -30,6 +31,9 @@ public:
 
 private:
     int m_num;
+
+    QString dirPath;
+    QDir dir;
 };
 
 #endif // ACCOUNTMANAGER_H

@@ -124,8 +124,25 @@ void MainWindow::on_btn_login_clicked()
     if(accountManager.validLogin(ui->txt_username->text(), ui->txt_password->text())) {
 
     } else {
-        QMessageBox::information(this, "SRFRS", "Your username or password was wrong :-(\nDo you need to create an account?");
-        return;
+
+        if (QMessageBox::Yes == QMessageBox(QMessageBox::Question, "SRFRS", "Your username or password was wrong :-(\nDo you need to create an account?", QMessageBox::Yes|QMessageBox::No).exec())
+        {
+            // change to create page
+
+            // clear inputs
+            ui->txt_username->clear();
+            ui->txt_password->clear();
+
+            // move to create page
+            ui->loginStacked->setCurrentIndex(1);
+            ui->txt_register_username->setFocus();
+
+            return;
+
+        } else {
+            // do nothing
+            return;
+        }
     }
 
 
