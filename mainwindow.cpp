@@ -1,14 +1,17 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "accountmanager.h"
 
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
-#include <QPropertyAnimation>
-#include <QTimer>
+#include <QRegExp>
+
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    accountManager(SRFRS::AccountManager(1))
 { 
     ui->setupUi(this);
 
@@ -45,7 +48,7 @@ void MainWindow::loginInitUI()
     effect->setYOffset(5);
     ui->loginStacked->setGraphicsEffect(effect);
 
-    // position groupbox elements
+    // setup first page of loginStacked
     int elementWidth = lsWidth - (padding / 2), elementHeight = 50;
     centerX = lsWidth / 2;  // update center to be relative to groupbox
 
@@ -74,7 +77,7 @@ void MainWindow::loginInitUI()
     // give username input focus
     ui->txt_username->setFocus();
 
-    // position second page of loginStacked
+    // setup second page of loginStacked
 
     // same elementWidth, height and centerX as before
     ui->txt_register_username->setFixedSize(elementWidth, elementHeight);
@@ -113,8 +116,18 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_btn_login_clicked()
 {
-    // want to transition to main page
-    QMessageBox::information(this, "Login Test", "Login successful? :-)");
+    // add transition to main page?
+    // clear lineEdits here?
+    // QMessageBox::information(this, "Login Test", "Login successful? :-)");
+
+    // validate inputs, username or password cannot be empty
+    if(accountManager.validLogin(ui->txt_username->text(), ui->txt_password->text())) {
+
+    } else {
+        QMessageBox::information(this, "SRFRS", "Your username or password was wrong :-(\nDo you need to create an account?");
+        return;
+    }
+
 
     // change to mainPage
     ui->stackedWidget->setCurrentIndex(1);
@@ -122,9 +135,6 @@ void MainWindow::on_btn_login_clicked()
 
     ui->lbl_username->setText(ui->txt_username->text());
     ui->tabWidget->setFocus();
-
-
-    // clear lineEdits?
 }
 
 void MainWindow::on_btn_logout_clicked()
@@ -142,14 +152,64 @@ void MainWindow::on_btn_logout_clicked()
 
 void MainWindow::on_btn_create_clicked()
 {
-    // clear inputs?
+    // clear inputs
+    ui->txt_username->clear();
+    ui->txt_password->clear();
+
+    // move to create page
     ui->loginStacked->setCurrentIndex(1);
     ui->txt_register_username->setFocus();
 }
 
 void MainWindow::on_btn_signin_clicked()
 {
-    // clear inputs?
+    // clear inputs
+    ui->txt_register_username->clear();
+    ui->txt_register_password->clear();
+
+    // move to login page
     ui->txt_username->setFocus();
     ui->loginStacked->setCurrentIndex(0);
+}
+
+void MainWindow::on_btn_register_clicked()
+{
+    QString username = ui->txt_register_username->text();
+    QString password = ui->txt_register_password->text();
+    QRegExp whitespace("\\s");
+
+    // clear inputs
+    ui->txt_register_username->clear();
+    ui->txt_register_password->clear();
+    ui->txt_register_username->setFocus();
+
+    // test to see whether username/password has whitespace
+    if(username.contains(whitespace) || password.contains(whitespace)) {
+
+        QMessageBox::warning(this, "SRFRS", "Your username or password cannot have spaces.");
+
+    } else if(username == "" || password == "") {
+
+        // check if either username or password are empty
+        QMessageBox::warning(this, "SRFRS", "Your username or password cannot be empty");
+
+    } else {
+
+        // see if registration successful
+        if(accountManager.registerUser(username, password)) {
+
+            // registration successful, tell user
+            QMessageBox::information(this, "SRFRS", "Your account was registered :-)\nTry logging in");
+
+            // move to login page
+            ui->txt_username->setFocus();
+            ui->loginStacked->setCurrentIndex(0);
+
+        } else {
+
+            // registration failed, username must not be unique
+            QMessageBox::warning(this, "SRFRS", "Your username is already taken :-(\nPlease use another one");
+
+        }
+    }
 }
