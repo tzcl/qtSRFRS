@@ -16,14 +16,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    accountmanager.cpp
+    accountmanager.cpp \
+    settings.cpp
 
 HEADERS += \
         mainwindow.h \
-    accountmanager.h
+    accountmanager.h \
+    settings.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    settings.ui
 
 RESOURCES += \
     res.qrc
