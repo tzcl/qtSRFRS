@@ -29,6 +29,12 @@ public:
     void moveToRegister();
 
     /**
+     * @brief logout: Logout the current user, writing any changes to the database
+     *                and moving to the login screen.
+     */
+    void logout();
+
+    /**
      * @brief getAccountManager: Returns the main window's account manager instance.
      * @return: AccountManager instance.
      */
@@ -38,7 +44,7 @@ public:
      * @brief getUsername: Returns the username of the current user.
      * @return: The current user's username as a string.
      */
-    QString getUsername();
+    QString getUser();
 
 private slots:
     void on_btn_login_clicked();
@@ -81,6 +87,7 @@ private:
 
     Ui::MainWindow *ui;
     SRFRS::AccountManager accountManager;
+    QString username;
 
 };
 

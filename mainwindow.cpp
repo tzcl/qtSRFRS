@@ -12,6 +12,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
+    username(""),
     accountManager(SRFRS::AccountManager(1))
 { 
     ui->setupUi(this);
@@ -19,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // make window non-resizable
     this->setFixedSize(960, 720);
     this->setWindowFlags(Qt::Window | Qt::MSWindowsFixedSizeDialogHint);
+
+    this->setWindowIcon(QIcon(":/icons/logo.png"));
 
     loginInitUI();
 
@@ -75,10 +78,6 @@ void MainWindow::loginInitUI()
     int totalWidth = ui->btn_create->width() + ui->lbl_create->width();
     ui->lbl_create->move(centerX - (totalWidth / 2), ui->btn_login->geometry().bottom() + 20);
     ui->btn_create->move(ui->lbl_create->geometry().right(), ui->lbl_create->geometry().top() - 2);
-
-    // login when user presses enter
-    connect(ui->txt_username, SIGNAL(returnPressed()), ui->btn_login, SIGNAL(clicked()));
-    connect(ui->txt_password, SIGNAL(returnPressed()), ui->btn_login, SIGNAL(clicked()));
 
     // give username input focus
     ui->txt_username->setFocus();
@@ -139,17 +138,22 @@ void MainWindow::moveToRegister() {
     ui->btn_register->setEnabled(false);
 }
 
+void MainWindow::logout() {
+    // logout stuff here
+    // write to database, move to login screen
+}
+
 SRFRS::AccountManager MainWindow::getAccountManager() {
     return accountManager;
 }
 
-QString MainWindow::getUsername() {
-    return ui->lbl_username->text();
+QString MainWindow::getUser() {
+    return username;
 }
 
 void MainWindow::on_btn_login_clicked()
 {
-    QString username = ui->txt_username->text();
+    username = ui->txt_username->text();
     QString password = ui->txt_password->text();
 
     // reset login page
@@ -181,9 +185,11 @@ void MainWindow::on_btn_login_clicked()
 
 void MainWindow::on_btn_logout_clicked()
 {
-    // logout stuff here
     if (QMessageBox::Yes == QMessageBox(QMessageBox::Question, "SRFRS", "Are you sure you want to log out?", QMessageBox::Yes|QMessageBox::No).exec())
     {
+        logout();
+
+        // move this into logout()
         moveToLogin();
     }
 }
@@ -202,18 +208,19 @@ void MainWindow::on_btn_register_clicked()
 {
     QString username = ui->txt_register_username->text();
     QString password = ui->txt_register_password->text();
-    QRegExp whitespace("\\s");
+    QRegExp invalidUsernameCharacters("([^A-Za-z0-9-_])");
+    QRegExp invalidPasswordCharacters("([^A-Za-z0-9-_!@#$%^&*])");
 
     moveToRegister();
 
-    // test to see whether username/password has whitespace
-    if(username.contains(whitespace) || password.contains(whitespace)) {
+    // test to see whether username/password contains invalid characters
+    if(username.contains(invalidUsernameCharacters) || password.contains(invalidPasswordCharacters)) {
 
-        QMessageBox::warning(this, "SRFRS", "Your username or password cannot have spaces.");
-
-    } else if(username == "" || password == "") {
+        QMessageBox::warning(this, "SRFRS", "Your username or password cannot contain punctuation or spaces.");
 
         // check if either username or password are empty
+    } else if(username == "" || password == "") {
+
         QMessageBox::warning(this, "SRFRS", "Your username or password cannot be empty.");
 
     } else {
@@ -236,22 +243,62 @@ void MainWindow::on_btn_register_clicked()
 // toggle login/register buttons if inputs are empty
 void MainWindow::on_txt_username_textEdited(const QString &arg1)
 {
-    toggleButtonState(ui->btn_login, arg1 != "" && ui->txt_password->text() != "");
+    // enable button if neither textbox is empty
+    bool on = arg1 != "" && ui->txt_password->text() != "";
+    toggleButtonState(ui->btn_login, on);
+
+    if(on) {
+        // login when user presses enter
+        connect(ui->txt_username, SIGNAL(returnPressed()), ui->btn_login, SIGNAL(clicked()), Qt::UniqueConnection);
+    } else {
+        // disable pressing enter when button is disabled
+        disconnect(ui->txt_username, SIGNAL(returnPressed()), 0, 0);
+    }
 }
 
 void MainWindow::on_txt_password_textEdited(const QString &arg1)
 {
-    toggleButtonState(ui->btn_login, arg1 != "" && ui->txt_username->text() != "");
+    // enable button if neither textbox is empty
+    bool on = arg1 != "" && ui->txt_username->text() != "";
+    toggleButtonState(ui->btn_login, on);
+
+    if(on) {
+        // login when user presses enter
+        connect(ui->txt_password, SIGNAL(returnPressed()), ui->btn_login, SIGNAL(clicked()), Qt::UniqueConnection);
+    } else {
+        // disable pressing enter when button is disabled
+        disconnect(ui->txt_password, SIGNAL(returnPressed()), 0, 0);
+    }
 }
 
 void MainWindow::on_txt_register_username_textEdited(const QString &arg1)
 {
-    toggleButtonState(ui->btn_register, arg1 != "" && ui->txt_register_password->text() != "");
+    // enable button if neither textbox is empty
+    bool on = arg1 != "" && ui->txt_register_password->text() != "";
+    toggleButtonState(ui->btn_register, on);
+
+    if(on) {
+        // register when user presses enter
+        connect(ui->txt_register_username, SIGNAL(returnPressed()), ui->btn_register, SIGNAL(clicked()));
+    } else {
+        // disable pressing enter when button is disabled
+        disconnect(ui->txt_register_username, SIGNAL(returnPressed()), 0, 0);
+    }
 }
 
 void MainWindow::on_txt_register_password_textEdited(const QString &arg1)
 {
-    toggleButtonState(ui->btn_register, arg1 != "" && ui->txt_register_password->text() != "");
+    // enable button if neither textbox is empty
+    bool on = arg1 != "" && ui->txt_register_username->text() != "";
+    toggleButtonState(ui->btn_register, on);
+
+    if(on) {
+        // register when user presses enter
+        connect(ui->txt_register_password, SIGNAL(returnPressed()), ui->btn_register, SIGNAL(clicked()), Qt::UniqueConnection);
+    } else {
+        // disable pressing enter when button is disabled
+        disconnect(ui->txt_register_password, SIGNAL(returnPressed()), 0, 0);
+    }
 }
 
 void MainWindow::on_btn_settings_clicked()

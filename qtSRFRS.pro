@@ -17,12 +17,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     accountmanager.cpp \
-    settings.cpp
+    settings.cpp \
+    flashcard.cpp
 
 HEADERS += \
         mainwindow.h \
     accountmanager.h \
-    settings.h
+    settings.h \
+    flashcard.h
 
 FORMS += \
         mainwindow.ui \

@@ -6,10 +6,8 @@
 #include <QCryptographicHash>
 
 namespace SRFRS {
-class AccountManager;
-}
 
-class SRFRS::AccountManager
+class AccountManager
 {
 public:
     AccountManager(int num);
@@ -54,5 +52,7 @@ private:
     QString dirPath;
     QDir dir;
 };
+
+}
 
 #endif // ACCOUNTMANAGER_H

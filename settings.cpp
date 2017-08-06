@@ -22,7 +22,7 @@ void Settings::on_btn_delete_account_clicked()
 {
     if (QMessageBox::Yes == QMessageBox(QMessageBox::Critical, "SRFRS", "Are you sure you want to delete your account?\nThis cannot be undone.", QMessageBox::Yes|QMessageBox::No).exec())
     {
-        if(parent->getAccountManager().deleteUser(parent->getUsername())) {
+        if(parent->getAccountManager().deleteUser(parent->getUser())) {
 
             // close this settings dialog
             close();
