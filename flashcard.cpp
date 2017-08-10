@@ -1,6 +1,6 @@
 #include "flashcard.h"
 
-Flashcard::Flashcard()
+SRFRS::Flashcard::Flashcard()
 {
 
 }

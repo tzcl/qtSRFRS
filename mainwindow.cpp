@@ -45,6 +45,12 @@ void MainWindow::loginInitUI()
     int welcomeHeight = 130;
     ui->lbl_welcome->move(centerX - ui->lbl_welcome->width() / 2, welcomeHeight);
 
+    // center logo
+    ui->login_logo->setGeometry(0, 0, 150, 150);
+    ui->login_logo->move(centerX - ui->login_logo->width()/ 2, 550);
+    // hide logo
+    ui->login_logo->setVisible(false);
+
     // center loginStacked
     int lsWidth = 360, lsHeight = 220, padding = 200;
     ui->loginStacked->setFixedSize(lsWidth, 300);

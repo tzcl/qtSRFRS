@@ -354,6 +354,25 @@ border-radius: 0px;
        </widget>
       </widget>
      </widget>
+     <widget class="QLabel" name="login_logo">
+      <property name="geometry">
+       <rect>
+        <x>390</x>
+        <y>429</y>
+        <width>341</width>
+        <height>281</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="res.qrc">:/icons/logo.png</pixmap>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="mainPage">
      <property name="styleSheet">
@@ -392,7 +411,7 @@ width: 150px;
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -497,6 +516,8 @@ color: white;
   <tabstop>btn_register</tabstop>
   <tabstop>btn_signin</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>

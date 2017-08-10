@@ -5,7 +5,6 @@
 
 Settings::Settings(MainWindow *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
-    parent(parent),
     ui(new Ui::Settings)
 {
     ui->setupUi(this);
@@ -18,16 +17,22 @@ Settings::~Settings()
     delete ui;
 }
 
+MainWindow* Settings::getParent() {
+    return dynamic_cast<MainWindow*>(parent());
+}
+
 void Settings::on_btn_delete_account_clicked()
 {
     if (QMessageBox::Yes == QMessageBox(QMessageBox::Critical, "SRFRS", "Are you sure you want to delete your account?\nThis cannot be undone.", QMessageBox::Yes|QMessageBox::No).exec())
     {
-        if(parent->getAccountManager().deleteUser(parent->getUser())) {
+        // get accountManager instance from the main window
+        // and delete the current user
+        if(getParent()->getAccountManager().deleteUser(getParent()->getUser())) {
 
             // close this settings dialog
             close();
 
-            parent->moveToLogin();
+            getParent()->moveToLogin();
         }
     }
 }
