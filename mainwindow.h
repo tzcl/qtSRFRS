@@ -2,9 +2,12 @@
 #define MAINWINDOW_H
 
 #include "accountmanager.h"
+#include "deckmanager.h"
+#include "deck.h"
 
 #include <QMainWindow>
 #include <QPushButton>
+#include <QStringList>
 
 namespace Ui {
 class MainWindow;
@@ -43,13 +46,25 @@ public:
      * @brief getAccountManager: Returns the main window's account manager instance.
      * @return: AccountManager instance.
      */
-    SRFRS::AccountManager getAccountManager();
+    SRFRS::AccountManager getAccountManager() { return _accountManager; }
 
     /**
      * @brief getUsername: Returns the username of the current user.
      * @return: The current user's username as a string.
      */
-    QString getUser();
+    QString getUser() { return _username; }
+
+    void addDeckToTable(const SRFRS::Deck &deck);
+
+    void removeDeckFromTable(const int row);
+
+    void addDeck(SRFRS::Deck &deck);
+
+    void removeDeck(int row);
+
+    QStringList deckNames() { return _deckManager.deckNames(); }
+
+    Ui::MainWindow* getUI() { return ui; }
 
 private slots:
     void on_btn_login_clicked();
@@ -76,6 +91,7 @@ private slots:
 
     void on_create_deck_clicked();
 
+
 private:
     /**
      * @brief loginInitUI: Initialise UI components for the login screen.
@@ -95,9 +111,12 @@ private:
     void toggleButtonState(QPushButton *button, bool state);
 
     Ui::MainWindow *ui;
-    SRFRS::AccountManager _accountManager;
-    QString _username;
 
+    QString _username;
+    QString _dirPath;
+
+    SRFRS::AccountManager _accountManager;
+    SRFRS::DeckManager _deckManager;
 };
 
 #endif // MAINWINDOW_H

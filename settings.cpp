@@ -24,7 +24,7 @@ MainWindow* Settings::getParent() {
 
 void Settings::on_btn_delete_account_clicked()
 {
-    if (QMessageBox::Yes == QMessageBox(QMessageBox::Critical, "SRFRS", "Are you sure you want to delete your account?\nThis cannot be undone.", QMessageBox::Yes|QMessageBox::No).exec())
+    if (QMessageBox::Yes == QMessageBox(QMessageBox::Critical, "SRFRS", "Are you sure you want to delete your account?\nThis cannot be undone.", QMessageBox::Yes|QMessageBox::No, this).exec())
     {
         // get accountManager instance from the main window
         // and delete the current user

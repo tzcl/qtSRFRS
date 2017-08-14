@@ -1,17 +1,16 @@
 #include "accountmanager.h"
 
 #include <QDebug>
-#include <QStandardPaths>
 #include <QFile>
 #include <QVector>
 #include <QMessageBox>
 
-SRFRS::AccountManager::AccountManager() :
-    _dirPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)),
-    _dir(QDir(_dirPath))
+SRFRS::AccountManager::AccountManager(QString dirPath) :
+    _dirPath(dirPath),
+    _dir(QDir(dirPath))
 {
     // make qtSRFRS dir in "User/AppData/Local" if directory doesn't exist
-    if(!_dir.exists()) { _dir.mkpath(_dirPath); }
+    if(!_dir.exists()) _dir.mkpath(_dirPath);
 }
 
 bool SRFRS::AccountManager::validLogin(QString username, QString password)
@@ -110,9 +109,9 @@ bool SRFRS::AccountManager::registerUser(QString username, QString password)
 
 bool SRFRS::AccountManager::deleteUser(QString username)
 {
+    // remove user from .users file
     QFile userFile(_dirPath + "/.users");
 
-    // remove user from .users file
     if(userFile.open(QIODevice::ReadWrite)) {
         QString contents;
         QTextStream in(&userFile);
@@ -127,6 +126,13 @@ bool SRFRS::AccountManager::deleteUser(QString username)
         userFile.close();
     } else {
         return false;
+    }
+
+    // remove user folder
+    QDir userDir(_dirPath + "/" + username);
+
+    if(userDir.exists()) {
+        _dir.rmdir(userDir.dirName());
     }
 
     return true;

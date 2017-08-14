@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "mainwindow.h"
+
 namespace Ui {
 class DeckCreator;
 }
@@ -18,8 +20,12 @@ public:
 private slots:
     void on_buttonBox_accepted();
 
+    void on_txt_name_textEdited(const QString &arg1);
+
 private:
     Ui::DeckCreator *ui;
+
+    MainWindow* getParent();
 };
 
 #endif // DECKCREATOR_H

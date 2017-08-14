@@ -8,14 +8,17 @@
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
 #include <QRegExp>
-
+#include <QStandardPaths>
 #include <QDebug>
+#include <QMenu>
+#include <QAction>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     _username(""),
-    _accountManager(SRFRS::AccountManager())
+    _dirPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)),
+    _accountManager(SRFRS::AccountManager(_dirPath))
 { 
     ui->setupUi(this);
 
@@ -46,12 +49,6 @@ void MainWindow::loginInitUI()
     // center welcome
     int welcomeHeight = 130;
     ui->lbl_welcome->move(centerX - ui->lbl_welcome->width() / 2, welcomeHeight);
-
-    // center logo
-    ui->login_logo->setGeometry(0, 0, 150, 150);
-    ui->login_logo->move(centerX - ui->login_logo->width()/ 2, 550);
-    // hide logo
-    ui->login_logo->setVisible(false);
 
     // center loginStacked
     int lsWidth = 360, lsHeight = 220, padding = 200;
@@ -110,16 +107,26 @@ void MainWindow::loginInitUI()
     totalWidth = ui->btn_signin->width() + ui->lbl_signin->width();
     ui->lbl_signin->move(centerX - (totalWidth / 2), ui->btn_register->geometry().bottom() + 20);
     ui->btn_signin->move(ui->lbl_signin->geometry().right(), ui->lbl_signin->geometry().top() - 2);
-
-    // register when user presses enter
-    connect(ui->txt_register_username, SIGNAL(returnPressed()), ui->btn_register, SIGNAL(clicked()));
-    connect(ui->txt_register_password, SIGNAL(returnPressed()), ui->btn_register, SIGNAL(clicked()));
 }
 
 void MainWindow::mainInitUI()
 {
     ui->btn_settings->setIcon(QIcon(":/icons/cogs.png"));
     ui->btn_logout->setIcon(QIcon(":/icons/power-off.png"));
+
+    // set up deck table
+
+    // hide vertical headers
+    ui->decks_table->verticalHeader()->hide();
+
+    // take care of resizing
+    ui->decks_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->decks_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->decks_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->decks_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+
+    //set up flashcard table
+
 }
 
 void MainWindow::toggleButtonState(QPushButton *button, bool state) {
@@ -150,13 +157,23 @@ void MainWindow::login() {
     // handle login stuff here
     // e.g. loading from data base
 
+    // set username label
+    ui->lbl_username->setText("Hi, " + _username + "!");
+    ui->lbl_username->adjustSize();
+    //ui->lbl_username->setFixedHeight(45);
+    ui->lbl_username->move(ui->btn_logout->x() + ui->btn_logout->width() - ui->lbl_username->width() - 8, 22);
+
+    // initialise deckManager
+    if(_deckManager.init(_username, _dirPath)) {
+        for(int i = 0; i < _deckManager.getCollection().getDecks().size(); i++) {
+            addDeckToTable(_deckManager.getCollection().getDecks().at(i));
+        }
+    }
+
     // move to mainPage
     ui->stackedWidget->setCurrentIndex(1);
     ui->tabWidget->setCurrentIndex(0);
     ui->tabWidget->setFocus();
-
-    // set username label
-    ui->lbl_username->setText(_username);
 }
 
 void MainWindow::logout() {
@@ -168,12 +185,51 @@ void MainWindow::logout() {
     moveToLogin();
 }
 
-SRFRS::AccountManager MainWindow::getAccountManager() {
-    return _accountManager;
+
+void MainWindow::addDeckToTable(const SRFRS::Deck &deck)
+{
+    ui->decks_table->setRowCount(ui->decks_table->rowCount() + 1);
+
+    int row = ui->decks_table->rowCount() - 1;
+
+    ui->decks_table->setItem(row, 0, new QTableWidgetItem(deck.getName()));
+    ui->decks_table->setItem(row, 1, new QTableWidgetItem(deck.getFlashcards()));
+    ui->decks_table->setItem(row, 2, new QTableWidgetItem(deck.getDate().toString("dd/MM/yyyy")));
+
+    QToolButton *button = new QToolButton();
+    QMenu *menu = new QMenu(this);
+
+    QAction *action_rename = new QAction("Rename", this);
+    QAction *action_edit = new QAction("Edit", this);
+    QAction *action_delete = new QAction("Delete", this);
+    menu->addAction(action_rename);
+    menu->addAction(action_edit);
+    menu->addAction(action_delete);
+
+    button->setIcon(QIcon(":/icons/cogs.png"));
+    button->setCursor(Qt::PointingHandCursor);
+    button->setMenu(menu);
+    button->setPopupMode(QToolButton::InstantPopup);
+
+    // connect button
+
+    ui->decks_table->setCellWidget(row, 3, button);
 }
 
-QString MainWindow::getUser() {
-    return _username;
+void MainWindow::removeDeckFromTable(const int row)
+{
+    ui->decks_table->removeRow(row);
+}
+
+void MainWindow::addDeck(SRFRS::Deck &deck)
+{
+    _deckManager.addDeck(deck);
+    addDeckToTable(deck);
+}
+
+void MainWindow::removeDeck(int row)
+{
+
 }
 
 void MainWindow::on_btn_login_clicked()
@@ -195,7 +251,7 @@ void MainWindow::on_btn_login_clicked()
     } else {
 
         // login failed, tell user
-        if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Your username or password was wrong :-(\nDo you need to create an account?", QMessageBox::Yes|QMessageBox::No).exec())
+        if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Your username or password was wrong :-(\nDo you need to create an account?", QMessageBox::Yes|QMessageBox::No, this).exec())
         {
             moveToRegister();
         }
@@ -204,7 +260,7 @@ void MainWindow::on_btn_login_clicked()
 
 void MainWindow::on_btn_logout_clicked()
 {
-    if (QMessageBox::Yes == QMessageBox(QMessageBox::Question, "SRFRS", "Are you sure you want to log out?", QMessageBox::Yes|QMessageBox::No).exec())
+    if (QMessageBox::Yes == QMessageBox(QMessageBox::Question, "SRFRS", "Are you sure you want to log out?", QMessageBox::Yes|QMessageBox::No, this).exec())
     {
         logout();
     }

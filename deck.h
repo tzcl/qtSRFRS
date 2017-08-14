@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QVector>
+#include <QDate>
 
 #include "flashcard.h"
 
@@ -12,7 +13,17 @@ class Deck
 {
 public:
     Deck();
-    Deck(QString name);
+    Deck(QString name, int flashcards, QDate date);
+
+    void remove(bool remove) { _remove = remove; }
+
+    QString getName() const { return _name; }
+    void setName(QString name) { _name = name; }
+
+    QString getFlashcards() const { return QString::number(_flashcards.size()); }
+
+    QDate getDate() const { return _date; }
+    void setDate(QString date) { _date = QDate::fromString(date, "d/M/yyyy"); }
 
     /**
      * @brief addCard: Adds the card to the deck, given it is not already in the deck.
@@ -33,12 +44,6 @@ public:
     void removeCards(QVector<Flashcard> &remove_cards);
 
     /**
-     * @brief renameDeck: Rename the deck.
-     * @param name: The new name.
-     */
-    void renameDeck(QString name);
-
-    /**
      * @brief operator ==: Overload the binary equality operator.
      * @param lhs: First deck to compare.
      * @param rhs: Second deck to compare.
@@ -51,6 +56,9 @@ public:
 private:
     QString _name;
     QVector<Flashcard> _flashcards;
+    QDate _date;
+
+    bool _remove;
 };
 
 }

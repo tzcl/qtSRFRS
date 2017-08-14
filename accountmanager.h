@@ -5,14 +5,12 @@
 #include <QDir>
 #include <QCryptographicHash>
 
-#include "deckmanager.h"
-
 namespace SRFRS {
 
 class AccountManager
 {
 public:
-    AccountManager();
+    AccountManager(QString dirPath);
 
     /**
      * @brief validLogin: Check whether the user inputs are valid.

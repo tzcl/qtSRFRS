@@ -17,6 +17,9 @@ FlashcardCreator::FlashcardCreator(QWidget *parent) :
     // disable tab as input, make it change text boxes
     ui->txt_front->setTabChangesFocus(true);
     ui->txt_back->setTabChangesFocus(true);
+
+    // give focus to front editor
+    ui->txt_front->setFocus();
 }
 
 FlashcardCreator::~FlashcardCreator()

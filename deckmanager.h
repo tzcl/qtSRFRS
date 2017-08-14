@@ -2,23 +2,38 @@
 #define DECKMANAGER_H
 
 #include <QVector>
+#include <QDir>
+#include <QTableWidget>
+#include <QWidget>
+#include <QStringList>
 
-#include "deck.h"
+#include "collection.h"
 
 namespace SRFRS {
 
 class DeckManager
 {
+
 public:
     DeckManager();
 
-    void addDeck(Deck& deck);
+    bool init(QString username, QString dirPath);
 
-    void removeDeck(Deck& deck);
+    void addDeck(Deck &deck);
 
-private:
-    // list of user decks
-    QVector<Deck> _decks;
+    void removeDeck(int row);
+
+    QStringList deckNames();
+
+    Collection getCollection() { return _collection; }
+
+private: 
+
+    QString _user;
+    QString _dirPath;
+    QDir _dir;
+
+    Collection _collection;
 };
 
 }
