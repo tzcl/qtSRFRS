@@ -11,7 +11,14 @@ namespace SRFRS {
 class Deck
 {
 public:
+    Deck();
     Deck(QString name);
+
+    /**
+     * @brief addCard: Adds the card to the deck, given it is not already in the deck.
+     * @param card: The card to add.
+     */
+    void addCard(Flashcard &card);
 
     /**
      * @brief addCards: Adds new cards to the deck, only if they are not already in the deck.
@@ -30,6 +37,16 @@ public:
      * @param name: The new name.
      */
     void renameDeck(QString name);
+
+    /**
+     * @brief operator ==: Overload the binary equality operator.
+     * @param lhs: First deck to compare.
+     * @param rhs: Second deck to compare.
+     * @return: True if decks have the same name, false otherwise.
+     */
+    friend bool operator==(const Deck& lhs, const Deck& rhs) {
+        return lhs._name == rhs._name;
+    }
 
 private:
     QString _name;

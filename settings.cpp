@@ -11,9 +11,6 @@ Settings::Settings(MainWindow *parent) :
     ui->setupUi(this);
 
     setWindowTitle("SRFRS");
-
-    // set up buttons
-    ui->buttonBox->setStandardButtons(QDialogButtonBox::Apply | QDialogButtonBox::Cancel);
 }
 
 Settings::~Settings()

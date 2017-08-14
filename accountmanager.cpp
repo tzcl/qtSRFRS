@@ -6,14 +6,11 @@
 #include <QVector>
 #include <QMessageBox>
 
-// TODO: need to keep track of which user logged in
-
-SRFRS::AccountManager::AccountManager(int num) :
-    m_num(num),
+SRFRS::AccountManager::AccountManager() :
     _dirPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)),
     _dir(QDir(_dirPath))
 {
-    // make qtSRFRS dir in AppData/Local if it doesn't exist
+    // make qtSRFRS dir in "User/AppData/Local" if directory doesn't exist
     if(!_dir.exists()) { _dir.mkpath(_dirPath); }
 }
 
@@ -133,10 +130,4 @@ bool SRFRS::AccountManager::deleteUser(QString username)
     }
 
     return true;
-}
-
-QString SRFRS::AccountManager::hashPassword(QString password)
-{
-    // hash password using Sha256
-    return QString(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex());
-}
+} 

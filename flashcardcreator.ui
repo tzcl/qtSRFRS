@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>437</width>
+    <height>358</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>240</y>
+     <x>80</x>
+     <y>310</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -32,10 +32,10 @@
   <widget class="QLabel" name="lbl_front_text">
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>44</x>
      <y>50</y>
-     <width>35</width>
-     <height>10</height>
+     <width>41</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
@@ -45,10 +45,10 @@
   <widget class="QLabel" name="lbl_back_text">
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>140</y>
-     <width>35</width>
-     <height>10</height>
+     <x>40</x>
+     <y>180</y>
+     <width>41</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
@@ -59,9 +59,9 @@
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>40</y>
-     <width>171</width>
-     <height>81</height>
+     <y>10</y>
+     <width>291</width>
+     <height>141</height>
     </rect>
    </property>
   </widget>
@@ -69,9 +69,9 @@
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>140</y>
-     <width>171</width>
-     <height>91</height>
+     <y>170</y>
+     <width>291</width>
+     <height>131</height>
     </rect>
    </property>
   </widget>

@@ -15,6 +15,9 @@ public:
     explicit DeckCreator(QWidget *parent = 0);
     ~DeckCreator();
 
+private slots:
+    void on_buttonBox_accepted();
+
 private:
     Ui::DeckCreator *ui;
 };

@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     _username(""),
-    _accountManager(SRFRS::AccountManager(1))
+    _accountManager(SRFRS::AccountManager())
 { 
     ui->setupUi(this);
 
