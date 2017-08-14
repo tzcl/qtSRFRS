@@ -10,11 +10,11 @@
 
 SRFRS::AccountManager::AccountManager(int num) :
     m_num(num),
-    dirPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)),
-    dir(QDir(dirPath))
+    _dirPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)),
+    _dir(QDir(_dirPath))
 {
     // make qtSRFRS dir in AppData/Local if it doesn't exist
-    if(!dir.exists()) { dir.mkpath(dirPath); }
+    if(!_dir.exists()) { _dir.mkpath(_dirPath); }
 }
 
 bool SRFRS::AccountManager::validLogin(QString username, QString password)
@@ -22,7 +22,7 @@ bool SRFRS::AccountManager::validLogin(QString username, QString password)
     password = hashPassword(password);
 
     // get user data from .users file
-    QFile userFile(dirPath + "/.users");
+    QFile userFile(_dirPath + "/.users");
 
     if(!userFile.exists()) {
 
@@ -60,7 +60,7 @@ bool SRFRS::AccountManager::validLogin(QString username, QString password)
 
 bool SRFRS::AccountManager::registerUser(QString username, QString password)
 {
-    QFile userFile(dirPath + "/.users");
+    QFile userFile(_dirPath + "/.users");
 
     if(!userFile.exists()) {
 
@@ -113,7 +113,7 @@ bool SRFRS::AccountManager::registerUser(QString username, QString password)
 
 bool SRFRS::AccountManager::deleteUser(QString username)
 {
-    QFile userFile(dirPath + "/.users");
+    QFile userFile(_dirPath + "/.users");
 
     // remove user from .users file
     if(userFile.open(QIODevice::ReadWrite)) {

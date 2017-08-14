@@ -29,6 +29,11 @@ public:
     void moveToRegister();
 
     /**
+     * @brief login: Login the user, loading flashcards and decks.
+     */
+    void login();
+
+    /**
      * @brief logout: Logout the current user, writing any changes to the database
      *                and moving to the login screen.
      */
@@ -67,6 +72,10 @@ private slots:
 
     void on_btn_settings_clicked();
 
+    void on_create_flashcard_clicked();
+
+    void on_create_deck_clicked();
+
 private:
     /**
      * @brief loginInitUI: Initialise UI components for the login screen.
@@ -86,8 +95,8 @@ private:
     void toggleButtonState(QPushButton *button, bool state);
 
     Ui::MainWindow *ui;
-    SRFRS::AccountManager accountManager;
-    QString username;
+    SRFRS::AccountManager _accountManager;
+    QString _username;
 
 };
 

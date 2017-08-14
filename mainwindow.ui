@@ -431,11 +431,43 @@ width: 150px;
        <attribute name="title">
         <string>Decks</string>
        </attribute>
+       <widget class="QPushButton" name="create_deck">
+        <property name="geometry">
+         <rect>
+          <x>340</x>
+          <y>190</y>
+          <width>171</width>
+          <height>81</height>
+         </rect>
+        </property>
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>Create a deck</string>
+        </property>
+       </widget>
       </widget>
       <widget class="QWidget" name="flashcardsTab">
        <attribute name="title">
         <string>Flashcards</string>
        </attribute>
+       <widget class="QPushButton" name="create_flashcard">
+        <property name="geometry">
+         <rect>
+          <x>310</x>
+          <y>140</y>
+          <width>171</width>
+          <height>81</height>
+         </rect>
+        </property>
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>Create a flashcard</string>
+        </property>
+       </widget>
       </widget>
      </widget>
      <widget class="QToolButton" name="btn_settings">

@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include "accountmanager.h"
 #include "settings.h"
+#include "flashcardcreator.h"
+#include "deckcreator.h"
 
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
@@ -12,8 +14,8 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    username(""),
-    accountManager(SRFRS::AccountManager(1))
+    _username(""),
+    _accountManager(SRFRS::AccountManager(1))
 { 
     ui->setupUi(this);
 
@@ -144,22 +146,39 @@ void MainWindow::moveToRegister() {
     ui->btn_register->setEnabled(false);
 }
 
+void MainWindow::login() {
+    // handle login stuff here
+    // e.g. loading from data base
+
+    // move to mainPage
+    ui->stackedWidget->setCurrentIndex(1);
+    ui->tabWidget->setCurrentIndex(0);
+    ui->tabWidget->setFocus();
+
+    // set username label
+    ui->lbl_username->setText(_username);
+}
+
 void MainWindow::logout() {
     // logout stuff here
     // write to database, move to login screen
+
+    // securely close user files
+
+    moveToLogin();
 }
 
 SRFRS::AccountManager MainWindow::getAccountManager() {
-    return accountManager;
+    return _accountManager;
 }
 
 QString MainWindow::getUser() {
-    return username;
+    return _username;
 }
 
 void MainWindow::on_btn_login_clicked()
 {
-    username = ui->txt_username->text();
+    _username = ui->txt_username->text();
     QString password = ui->txt_password->text();
 
     // reset login page
@@ -169,15 +188,9 @@ void MainWindow::on_btn_login_clicked()
     ui->btn_login->setEnabled(false);
 
     // validate inputs, username or password cannot be empty
-    if(accountManager.validLogin(username, password)) {
+    if(_accountManager.validLogin(_username, password)) {
 
-        // move to mainPage
-        ui->stackedWidget->setCurrentIndex(1);
-        ui->tabWidget->setCurrentIndex(0);
-        ui->tabWidget->setFocus();
-
-        // set username label
-        ui->lbl_username->setText(username);
+        login();
 
     } else {
 
@@ -194,9 +207,6 @@ void MainWindow::on_btn_logout_clicked()
     if (QMessageBox::Yes == QMessageBox(QMessageBox::Question, "SRFRS", "Are you sure you want to log out?", QMessageBox::Yes|QMessageBox::No).exec())
     {
         logout();
-
-        // move this into logout()
-        moveToLogin();
     }
 }
 
@@ -232,7 +242,7 @@ void MainWindow::on_btn_register_clicked()
     } else {
 
         // see if registration successful
-        if(accountManager.registerUser(username, password)) {
+        if(_accountManager.registerUser(username, password)) {
 
             // registration successful, tell user
             QMessageBox::information(this, "SRFRS", "Your account was registered :-)\nTry logging in.");
@@ -311,4 +321,16 @@ void MainWindow::on_btn_settings_clicked()
 {
     Settings settings(this);
     settings.exec();
+}
+
+void MainWindow::on_create_flashcard_clicked()
+{
+    FlashcardCreator fc(this);
+    fc.exec();
+}
+
+void MainWindow::on_create_deck_clicked()
+{
+    DeckCreator dc(this);
+    dc.exec();
 }

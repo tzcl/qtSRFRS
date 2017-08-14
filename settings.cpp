@@ -2,6 +2,7 @@
 #include "ui_settings.h"
 
 #include <QMessageBox>
+#include <QDialogButtonBox>
 
 Settings::Settings(MainWindow *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
@@ -10,6 +11,9 @@ Settings::Settings(MainWindow *parent) :
     ui->setupUi(this);
 
     setWindowTitle("SRFRS");
+
+    // set up buttons
+    ui->buttonBox->setStandardButtons(QDialogButtonBox::Apply | QDialogButtonBox::Cancel);
 }
 
 Settings::~Settings()

@@ -49,8 +49,8 @@ private:
 
     int m_num;
 
-    QString dirPath;
-    QDir dir;
+    QString _dirPath;
+    QDir _dir;
 };
 
 }

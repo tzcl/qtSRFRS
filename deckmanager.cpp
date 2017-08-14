@@ -1,6 +1,6 @@
 #include "deckmanager.h"
 
-DeckManager::DeckManager()
+SRFRS::DeckManager::DeckManager()
 {
 
 }
