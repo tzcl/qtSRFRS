@@ -7,8 +7,6 @@
 #include <QSignalMapper>
 #include <QString>
 
-#include "deckeditor.h"
-
 SRFRS::DeckManager::DeckManager() :
     _user(),
     _dirPath(),
@@ -31,6 +29,18 @@ bool SRFRS::DeckManager::init(QString username, QString dirPath)
     return _collection.load(_dirPath);
 }
 
+SRFRS::Deck SRFRS::DeckManager::getDeck(QString deckName)
+{
+    for(int i = 0; i < _collection.getDecks().size(); ++i) {
+        if(_collection.getDecks()[i].getName() == deckName) {
+            return _collection.getDecks()[i];
+        }
+    }
+
+    qDebug() << "couldn't find deck :S in deckmanager getDeck";
+    return _collection.getDecks()[0];
+}
+
 QStringList SRFRS::DeckManager::deckNames()
 {
     QStringList result;
@@ -48,7 +58,12 @@ void SRFRS::DeckManager::addDeck(Deck& deck)
 }
 
 
-void SRFRS::DeckManager::removeDeck(int row)
+void SRFRS::DeckManager::removeDeck(QString deckName)
 {
-    _collection.removeDeck(_collection.getDecks()[row]);
+    _collection.removeDeck(getDeck(deckName));
+}
+
+void SRFRS::DeckManager::renameDeck(QString oldName, Deck &deck)
+{
+    _collection.renameDeck(oldName, deck);
 }

@@ -4,6 +4,7 @@
 #include <QString>
 #include <QVector>
 #include <QDate>
+#include <QDebug>
 
 #include "flashcard.h"
 
@@ -54,9 +55,9 @@ public:
     }
 
 private:
-    QString _name;
-    QVector<Flashcard> _flashcards;
-    QDate _date;
+    mutable QString _name;
+    mutable QVector<Flashcard> _flashcards;
+    mutable QDate _date;
 
     bool _remove;
 };

@@ -403,7 +403,7 @@ background: #43A047;
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -418,6 +418,24 @@ background: #43A047;
        <attribute name="title">
         <string>Review</string>
        </attribute>
+       <widget class="QLabel" name="flashcard_label_2">
+        <property name="geometry">
+         <rect>
+          <x>50</x>
+          <y>30</y>
+          <width>161</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>REVIEW</string>
+        </property>
+       </widget>
       </widget>
       <widget class="QWidget" name="decksTab">
        <attribute name="title">
@@ -439,10 +457,10 @@ background: #43A047;
          <string>Create a deck</string>
         </property>
        </widget>
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="decks_label">
         <property name="geometry">
          <rect>
-          <x>40</x>
+          <x>50</x>
           <y>30</y>
           <width>161</width>
           <height>51</height>
@@ -537,10 +555,10 @@ background: #43A047;
        <widget class="QPushButton" name="create_flashcard">
         <property name="geometry">
          <rect>
-          <x>310</x>
-          <y>140</y>
-          <width>171</width>
-          <height>81</height>
+          <x>400</x>
+          <y>33</y>
+          <width>200</width>
+          <height>51</height>
          </rect>
         </property>
         <property name="cursor">
@@ -549,6 +567,101 @@ background: #43A047;
         <property name="text">
          <string>Create a flashcard</string>
         </property>
+       </widget>
+       <widget class="QLabel" name="flashcard_label">
+        <property name="geometry">
+         <rect>
+          <x>50</x>
+          <y>30</y>
+          <width>161</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>FLASHCARDS</string>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="flashcards_table">
+        <property name="geometry">
+         <rect>
+          <x>50</x>
+          <y>120</y>
+          <width>850</width>
+          <height>459</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::AdjustIgnored</enum>
+        </property>
+        <property name="autoScroll">
+         <bool>true</bool>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::NoSelection</enum>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectColumns</enum>
+        </property>
+        <property name="verticalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+        <property name="horizontalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+        <attribute name="horizontalHeaderCascadingSectionResizes">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+         <bool>true</bool>
+        </attribute>
+        <attribute name="horizontalHeaderStretchLastSection">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderDefaultSectionSize">
+         <number>30</number>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>ID</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Front</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Back</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Date Created</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Edit</string>
+         </property>
+        </column>
        </widget>
       </widget>
      </widget>

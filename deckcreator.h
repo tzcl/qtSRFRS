@@ -20,7 +20,7 @@ public:
 private slots:
     void on_buttonBox_accepted();
 
-    void on_txt_name_textEdited(const QString &arg1);
+    void on_txt_name_textEdited(const QString &string);
 
 private:
     Ui::DeckCreator *ui;

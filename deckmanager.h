@@ -21,9 +21,13 @@ public:
 
     void addDeck(Deck &deck);
 
-    void removeDeck(int row);
+    void removeDeck(QString deckName);
+
+    void renameDeck(QString oldName, Deck &deck);
 
     QStringList deckNames();
+
+    Deck getDeck(QString deckName);
 
     Collection getCollection() { return _collection; }
 

@@ -14,13 +14,10 @@ class DeckEditor : public QDialog
     Q_OBJECT
 
 public:
-    explicit DeckEditor(SRFRS::Deck &deck, QWidget *parent = 0);
+    explicit DeckEditor(QString name, SRFRS::Deck &deck, QWidget *parent = 0);
     ~DeckEditor();
 
 private slots:
-    void on_btn_rename_clicked();
-
-    void on_btn_delete_clicked();
 
 private:
     Ui::DeckEditor *ui;

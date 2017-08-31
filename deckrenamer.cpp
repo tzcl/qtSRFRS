@@ -1,15 +1,14 @@
-#include "deckcreator.h"
-#include "ui_deckcreator.h"
+#include "deckrenamer.h"
+#include "ui_deckrenamer.h"
 
-#include "deck.h"
-
+#include <QDialogButtonBox>
+#include <QPushButton>
 #include <QDebug>
-#include <QDate>
-#include <QMessageBox>
 
-DeckCreator::DeckCreator(QWidget *parent) :
+DeckRenamer::DeckRenamer(SRFRS::Deck &deck, QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
-    ui(new Ui::DeckCreator)
+    ui(new Ui::DeckRenamer),
+    _deck(deck)
 {
     ui->setupUi(this);
 
@@ -17,23 +16,21 @@ DeckCreator::DeckCreator(QWidget *parent) :
     ui->txt_name->setFocus();
 }
 
-DeckCreator::~DeckCreator()
+DeckRenamer::~DeckRenamer()
 {
     delete ui;
 }
 
-MainWindow* DeckCreator::getParent() {
+MainWindow* DeckRenamer::getParent() {
     return dynamic_cast<MainWindow*>(parent());
 }
 
-void DeckCreator::on_buttonBox_accepted()
+void DeckRenamer::on_buttonBox_accepted()
 {
-    SRFRS::Deck deck(ui->txt_name->text(), 0, QDate::currentDate());
-
-    getParent()->addDeck(deck);
+    _deck.setName(ui->txt_name->text());
 }
 
-void DeckCreator::on_txt_name_textEdited(const QString &string)
+void DeckRenamer::on_txt_name_textEdited(const QString &string)
 {
     if(getParent()->deckNames().contains(string)) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);

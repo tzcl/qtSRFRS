@@ -62,6 +62,10 @@ public:
 
     void removeDeck(int row);
 
+    int getDeckRow(QString deckName);
+
+    void addDeckButton(int row, QString name);
+
     QStringList deckNames() { return _deckManager.deckNames(); }
 
     Ui::MainWindow* getUI() { return ui; }
@@ -91,6 +95,13 @@ private slots:
 
     void on_create_deck_clicked();
 
+    void deck_rename(QString deckName);
+
+    void deck_edit(QString deckName);
+
+    void deck_delete(QString deckName);
+
+    void on_decks_table_cellDoubleClicked(int row, int column);
 
 private:
     /**

@@ -4,6 +4,8 @@
 #include "settings.h"
 #include "flashcardcreator.h"
 #include "deckcreator.h"
+#include "deckeditor.h"
+#include "deckrenamer.h"
 
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
@@ -12,6 +14,7 @@
 #include <QDebug>
 #include <QMenu>
 #include <QAction>
+#include <QSignalMapper>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -196,24 +199,7 @@ void MainWindow::addDeckToTable(const SRFRS::Deck &deck)
     ui->decks_table->setItem(row, 1, new QTableWidgetItem(deck.getFlashcards()));
     ui->decks_table->setItem(row, 2, new QTableWidgetItem(deck.getDate().toString("dd/MM/yyyy")));
 
-    QToolButton *button = new QToolButton();
-    QMenu *menu = new QMenu(this);
-
-    QAction *action_rename = new QAction("Rename", this);
-    QAction *action_edit = new QAction("Edit", this);
-    QAction *action_delete = new QAction("Delete", this);
-    menu->addAction(action_rename);
-    menu->addAction(action_edit);
-    menu->addAction(action_delete);
-
-    button->setIcon(QIcon(":/icons/cogs.png"));
-    button->setCursor(Qt::PointingHandCursor);
-    button->setMenu(menu);
-    button->setPopupMode(QToolButton::InstantPopup);
-
-    // connect button
-
-    ui->decks_table->setCellWidget(row, 3, button);
+    addDeckButton(row, deck.getName());
 }
 
 void MainWindow::removeDeckFromTable(const int row)
@@ -227,9 +213,95 @@ void MainWindow::addDeck(SRFRS::Deck &deck)
     addDeckToTable(deck);
 }
 
-void MainWindow::removeDeck(int row)
+void MainWindow::addDeckButton(int row, QString name)
 {
+    QToolButton *button = new QToolButton();
+    QMenu *menu = new QMenu(this);
 
+    QAction *action_rename = new QAction("Rename", this);
+    QAction *action_edit = new QAction("Edit", this);
+    QAction *action_delete = new QAction("Delete", this);
+
+    menu->addAction(action_rename);
+    menu->addAction(action_edit);
+    menu->addAction(action_delete);
+
+    button->setIcon(QIcon(":/icons/cogs.png"));
+    button->setCursor(Qt::PointingHandCursor);
+    button->setMenu(menu);
+    button->setPopupMode(QToolButton::InstantPopup);
+
+    QSignalMapper *mapper_rename = new QSignalMapper();
+    QSignalMapper *mapper_edit = new QSignalMapper();
+    QSignalMapper *mapper_delete = new QSignalMapper();
+
+    connect(action_rename, SIGNAL(triggered()), mapper_rename, SLOT(map()));
+    connect(action_edit, SIGNAL(triggered()), mapper_edit, SLOT(map()));
+    connect(action_delete, SIGNAL(triggered()), mapper_delete, SLOT(map()));
+
+    mapper_rename->setMapping(action_rename, name);
+    mapper_edit->setMapping(action_edit, name);
+    mapper_delete->setMapping(action_delete, name);
+
+    connect(mapper_rename, SIGNAL(mapped(QString)), this, SLOT(deck_rename(QString)));
+    connect(mapper_edit, SIGNAL(mapped(QString)), this, SLOT(deck_edit(QString)));
+    connect(mapper_delete, SIGNAL(mapped(QString)), this, SLOT(deck_delete(QString)));
+
+    ui->decks_table->setCellWidget(row, 3, button);
+}
+
+void MainWindow::deck_rename(QString deckName)
+{
+    SRFRS::Deck deck = _deckManager.getDeck(deckName);
+
+    DeckRenamer renamer(deck, this);
+    renamer.exec();
+
+    _deckManager.renameDeck(deckName, deck);
+
+    int row = -1;
+
+    for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+        if(ui->decks_table->item(i, 0)->text() == deckName) row = i;
+    }
+
+    // only if valid row
+    if(row != -1) {
+        // write new name
+        ui->decks_table->item(row, 0)->setText(deck.getName());
+        // reset button
+        addDeckButton(row, deck.getName());
+    }
+}
+
+void MainWindow::deck_edit(QString deckName)
+{
+    DeckEditor de(deckName, _deckManager.getDeck(deckName), this);
+    de.exec();
+}
+
+
+void MainWindow::deck_delete(QString deckName)
+{
+    // warn user before deleting
+    if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Are you sure you want to delete your deck \"" + deckName + "\"?", QMessageBox::Yes|QMessageBox::No, this).exec())
+    {
+        int row = getDeckRow(deckName);
+        _deckManager.removeDeck(deckName);
+
+        ui->decks_table->removeRow(row);
+    }
+}
+
+int MainWindow::getDeckRow(QString deckName)
+{
+    int row = -1;
+
+    for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+        if(ui->decks_table->item(i, 0)->text() == deckName) row = i;
+    }
+
+    return row;
 }
 
 void MainWindow::on_btn_login_clicked()
@@ -389,4 +461,13 @@ void MainWindow::on_create_deck_clicked()
 {
     DeckCreator dc(this);
     dc.exec();
+}
+
+void MainWindow::on_decks_table_cellDoubleClicked(int row, int column)
+{
+    if(column == 0) {
+        QString deckName = ui->decks_table->item(row, 0)->text();
+        DeckEditor de(deckName, _deckManager.getDeck(deckName), this);
+        de.exec();
+    }
 }

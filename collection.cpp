@@ -121,3 +121,39 @@ bool SRFRS::Collection::removeDeck(Deck &deck)
 
     return true;
 }
+
+void SRFRS::Collection::renameDeck(QString oldName, Deck &deck)
+{
+    for(int i = 0; i < _decks.size(); ++i) {
+        if(_decks.at(i).getName() == oldName) {
+            _decks[i].setName(deck.getName());
+        }
+    }
+
+    // rename in decks file
+    QFile deckFile(_dir + "/.decks");
+
+    bool replaced = false;
+
+    if(deckFile.open(QIODevice::ReadWrite)) {
+
+        QString newContents;
+        QTextStream oldContents(&deckFile);
+
+        while(!oldContents.atEnd()){
+
+            QString line = oldContents.readLine();
+            if(line.contains(oldName) && !replaced) {
+                line.replace(oldName, deck.getName());
+                replaced = true;
+            }
+
+            newContents.append(line + "\n");
+        }
+
+        deckFile.resize(0);
+        oldContents << newContents;
+
+        deckFile.close();
+    }
+}
