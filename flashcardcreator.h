@@ -4,6 +4,7 @@
 #include <QDialog>
 
 #include "flashcard.h"
+#include "mainwindow.h"
 
 namespace Ui {
 class FlashcardCreator;
@@ -16,6 +17,8 @@ class FlashcardCreator : public QDialog
 public:
     explicit FlashcardCreator(QWidget *parent = 0);
     ~FlashcardCreator();
+
+    MainWindow* getParent();
 
 private slots:
     void on_buttonBox_accepted();

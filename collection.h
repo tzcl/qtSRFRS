@@ -22,7 +22,6 @@ public:
 
     void renameDeck(QString oldName, Deck &deck);
 
-    // TODO: wrap this
     QVector<Deck> getDecks() { return _decks; }
 
 private:

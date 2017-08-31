@@ -1,11 +1,15 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include "accountmanager.h"
 #include "settings.h"
-#include "flashcardcreator.h"
+
 #include "deckcreator.h"
 #include "deckeditor.h"
 #include "deckrenamer.h"
+
+#include "flashcardcreator.h"
+#include "flashcardeditor.h"
 
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
@@ -130,6 +134,15 @@ void MainWindow::mainInitUI()
 
     //set up flashcard table
 
+    // hide vertical headers
+    ui->flashcards_table->verticalHeader()->hide();
+
+    // take care of resizing
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
 }
 
 void MainWindow::toggleButtonState(QPushButton *button, bool state) {
@@ -173,6 +186,13 @@ void MainWindow::login() {
         }
     }
 
+    // initialise flashcardManager
+    if(_flashcardManager.init(_username, _dirPath)) {
+        for(int i = 0; i < _flashcardManager.getFlashcards().size(); i++) {
+            addFlashcardToTable(_flashcardManager.getFlashcards().at(i));
+        }
+    }
+
     // move to mainPage
     ui->stackedWidget->setCurrentIndex(1);
     ui->tabWidget->setCurrentIndex(0);
@@ -188,9 +208,10 @@ void MainWindow::logout() {
     moveToLogin();
 }
 
-
 void MainWindow::addDeckToTable(const SRFRS::Deck &deck)
 {
+    ui->decks_table->setSortingEnabled(false);
+
     ui->decks_table->setRowCount(ui->decks_table->rowCount() + 1);
 
     int row = ui->decks_table->rowCount() - 1;
@@ -200,6 +221,8 @@ void MainWindow::addDeckToTable(const SRFRS::Deck &deck)
     ui->decks_table->setItem(row, 2, new QTableWidgetItem(deck.getDate().toString("dd/MM/yyyy")));
 
     addDeckButton(row, deck.getName());
+
+    ui->decks_table->setSortingEnabled(true);
 }
 
 void MainWindow::removeDeckFromTable(const int row)
@@ -304,6 +327,102 @@ int MainWindow::getDeckRow(QString deckName)
     return row;
 }
 
+void MainWindow::addFlashcard(SRFRS::Flashcard &card)
+{
+    _flashcardManager.addFlashcard(card);
+    addFlashcardToTable(card);
+}
+
+void MainWindow::addFlashcardToTable(const SRFRS::Flashcard &card)
+{
+    ui->flashcards_table->setSortingEnabled(false);
+
+    ui->flashcards_table->setRowCount(ui->flashcards_table->rowCount() + 1);
+
+    int row = ui->flashcards_table->rowCount() - 1;
+
+    ui->flashcards_table->setItem(row, 0, new QTableWidgetItem(QString::number(card.getID())));
+    ui->flashcards_table->setItem(row, 1, new QTableWidgetItem(card.getFront()));
+    ui->flashcards_table->setItem(row, 2, new QTableWidgetItem(card.getBack()));
+    ui->flashcards_table->setItem(row, 3, new QTableWidgetItem(card.getDate().toString("dd/MM/yyyy")));
+
+    addFlashcardButton(row, card.getID());
+
+    ui->flashcards_table->setSortingEnabled(true);
+}
+
+void MainWindow::addFlashcardButton(int row, int ID)
+{
+    QToolButton *button = new QToolButton();
+    QMenu *menu = new QMenu(this);
+
+    QAction *action_edit = new QAction("Edit", this);
+    QAction *action_delete = new QAction("Delete", this);
+
+    menu->addAction(action_edit);
+    menu->addAction(action_delete);
+
+    button->setIcon(QIcon(":/icons/cogs.png"));
+    button->setCursor(Qt::PointingHandCursor);
+    button->setMenu(menu);
+    button->setPopupMode(QToolButton::InstantPopup);
+
+    QSignalMapper *mapper_edit = new QSignalMapper();
+    QSignalMapper *mapper_delete = new QSignalMapper();
+
+    connect(action_edit, SIGNAL(triggered()), mapper_edit, SLOT(map()));
+    connect(action_delete, SIGNAL(triggered()), mapper_delete, SLOT(map()));
+
+    mapper_edit->setMapping(action_edit, ID);
+    mapper_delete->setMapping(action_delete, ID);
+
+    connect(mapper_edit, SIGNAL(mapped(int)), this, SLOT(flashcard_edit(int)));
+    connect(mapper_delete, SIGNAL(mapped(int)), this, SLOT(flashcard_delete(int)));
+
+    ui->flashcards_table->setCellWidget(row, 4, button);
+}
+
+void MainWindow::flashcard_edit(int ID)
+{
+    qDebug() << "editing!!";
+}
+
+void MainWindow::flashcard_delete(int ID)
+{
+    // warn user before deleting
+    if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Are you sure you want to delete your flashcard? (ID: " + QString::number(ID) + ")", QMessageBox::Yes|QMessageBox::No, this).exec())
+    {
+        // some warning about removing flashcard from decks
+        int row = getFlashcardRow(ID);
+        _flashcardManager.removeFlashcard(_flashcardManager.getFlashcard(ID));
+
+        ui->flashcards_table->removeRow(row);
+
+        // reset IDs
+        resetFlashcardIDs();
+    }
+}
+
+int MainWindow::getFlashcardRow(int ID)
+{
+    int row = -1;
+
+    for(int i = 0; i < ui->flashcards_table->rowCount(); ++i) {
+        if(ui->flashcards_table->item(i, 0)->text() == QString::number(ID)) row = i;
+    }
+
+    return row;
+}
+
+void MainWindow::resetFlashcardIDs()
+{
+    for(int i = 0; i < _flashcardManager.getFlashcards().size(); ++i) {
+        int row = getFlashcardRow(_flashcardManager.getFlashcards().at(i).getID());
+        _flashcardManager.setID(i, ui->flashcards_table->item(row, 0)->text().toInt(), i);
+        ui->flashcards_table->setItem(row, 0, new QTableWidgetItem(QString::number(i)));
+    }
+}
+
 void MainWindow::on_btn_login_clicked()
 {
     _username = ui->txt_username->text();
@@ -329,6 +448,7 @@ void MainWindow::on_btn_login_clicked()
         }
     }
 }
+
 
 void MainWindow::on_btn_logout_clicked()
 {
@@ -469,5 +589,12 @@ void MainWindow::on_decks_table_cellDoubleClicked(int row, int column)
         QString deckName = ui->decks_table->item(row, 0)->text();
         DeckEditor de(deckName, _deckManager.getDeck(deckName), this);
         de.exec();
+    }
+}
+
+void MainWindow::on_flashcards_table_cellDoubleClicked(int row, int column)
+{
+    if(column == 1 || column == 2) {
+
     }
 }

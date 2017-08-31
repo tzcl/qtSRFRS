@@ -13,6 +13,8 @@ DeckRenamer::DeckRenamer(SRFRS::Deck &deck, QWidget *parent) :
     ui->setupUi(this);
 
     setWindowTitle("SRFRS");
+
+    ui->txt_name->setText(deck.getName());
     ui->txt_name->setFocus();
 }
 

@@ -4,6 +4,7 @@
 #include "accountmanager.h"
 #include "deckmanager.h"
 #include "deck.h"
+#include "flashcardmanager.h"
 
 #include <QMainWindow>
 #include <QPushButton>
@@ -48,11 +49,17 @@ public:
      */
     SRFRS::AccountManager getAccountManager() { return _accountManager; }
 
+    SRFRS::DeckManager getDeckManager() { return _deckManager; }
+
+    SRFRS::FlashcardManager getFlashcardManager() { return _flashcardManager; }
+
     /**
      * @brief getUsername: Returns the username of the current user.
      * @return: The current user's username as a string.
      */
     QString getUser() { return _username; }
+
+    Ui::MainWindow* getUI() { return ui; }
 
     void addDeckToTable(const SRFRS::Deck &deck);
 
@@ -68,7 +75,19 @@ public:
 
     QStringList deckNames() { return _deckManager.deckNames(); }
 
-    Ui::MainWindow* getUI() { return ui; }
+    void addFlashcardToTable(const SRFRS::Flashcard &card);
+
+    void addFlashcardButton(int row, int ID);
+
+    void addFlashcard(SRFRS::Flashcard &card);
+
+    void removeFlashcard(int row);
+
+    int getFlashcardRow(int ID);
+
+    int getFlashcardID() { return _flashcardManager.getFlashcards().size(); }
+
+    void resetFlashcardIDs();
 
 private slots:
     void on_btn_login_clicked();
@@ -103,6 +122,12 @@ private slots:
 
     void on_decks_table_cellDoubleClicked(int row, int column);
 
+    void flashcard_edit(int ID);
+
+    void flashcard_delete(int ID);
+
+    void on_flashcards_table_cellDoubleClicked(int row, int column);
+
 private:
     /**
      * @brief loginInitUI: Initialise UI components for the login screen.
@@ -128,6 +153,7 @@ private:
 
     SRFRS::AccountManager _accountManager;
     SRFRS::DeckManager _deckManager;
+    SRFRS::FlashcardManager _flashcardManager;
 };
 
 #endif // MAINWINDOW_H

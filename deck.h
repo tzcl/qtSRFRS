@@ -55,9 +55,9 @@ public:
     }
 
 private:
-    mutable QString _name;
-    mutable QVector<Flashcard> _flashcards;
-    mutable QDate _date;
+    QString _name;
+    QVector<Flashcard> _flashcards;
+    QDate _date;
 
     bool _remove;
 };

@@ -403,7 +403,7 @@ background: #43A047;
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -418,7 +418,7 @@ background: #43A047;
        <attribute name="title">
         <string>Review</string>
        </attribute>
-       <widget class="QLabel" name="flashcard_label_2">
+       <widget class="QLabel" name="review_label">
         <property name="geometry">
          <rect>
           <x>50</x>
@@ -499,6 +499,9 @@ background: #43A047;
         <property name="editTriggers">
          <set>QAbstractItemView::NoEditTriggers</set>
         </property>
+        <property name="tabKeyNavigation">
+         <bool>false</bool>
+        </property>
         <property name="selectionMode">
          <enum>QAbstractItemView::NoSelection</enum>
         </property>
@@ -573,7 +576,7 @@ background: #43A047;
          <rect>
           <x>50</x>
           <y>30</y>
-          <width>161</width>
+          <width>311</width>
           <height>51</height>
          </rect>
         </property>
@@ -609,6 +612,9 @@ background: #43A047;
         </property>
         <property name="editTriggers">
          <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="tabKeyNavigation">
+         <bool>false</bool>
         </property>
         <property name="selectionMode">
          <enum>QAbstractItemView::NoSelection</enum>

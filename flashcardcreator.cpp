@@ -4,6 +4,7 @@
 #include "flashcard.h"
 
 #include <QDebug>
+#include <QDate>
 
 FlashcardCreator::FlashcardCreator(QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
@@ -27,12 +28,17 @@ FlashcardCreator::~FlashcardCreator()
     delete ui;
 }
 
+MainWindow* FlashcardCreator::getParent() {
+    return dynamic_cast<MainWindow*>(parent());
+}
+
 void FlashcardCreator::on_buttonBox_accepted()
 {
     // save front/back changes
     // validate input
-    SRFRS::Flashcard newCard(ui->txt_front->toPlainText(), ui->txt_back->toPlainText());
 
-    qDebug() << newCard.getFront() << ", " << newCard.getBack();
-    // add to deck
+    // 0 index or 1 index?
+    SRFRS::Flashcard newCard(getParent()->getFlashcardID(), ui->txt_front->toPlainText(), ui->txt_back->toPlainText(), QDate::currentDate());
+
+    getParent()->addFlashcard(newCard);
 }

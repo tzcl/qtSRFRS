@@ -2,6 +2,7 @@
 #define FLASHCARD_H
 
 #include <QString>
+#include <QDate>
 
 namespace SRFRS {
 
@@ -9,11 +10,17 @@ class Flashcard
 {
 public:
     Flashcard();
-    Flashcard(QString front, QString back);
+    Flashcard(int ID, QString front, QString back, QDate date);
 
-    QString getFront() { return _frontText; }
+    int getID() const { return _ID; }
 
-    QString getBack() { return _backText; }
+    void setID(int id) { _ID = id; }
+
+    QString getFront() const { return _frontText; }
+
+    QString getBack() const { return _backText; }
+
+    QDate getDate() const { return _dateCreated; }
 
     /**
      * @brief operator ==: Overload the binary equality operator.
@@ -26,11 +33,16 @@ public:
     }
 
 private:
+
+    mutable int _ID;
+
     // card front
     QString _frontText;
 
     // card back
     QString _backText;
+
+    QDate _dateCreated;
 };
 
 }
