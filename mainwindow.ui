@@ -403,7 +403,7 @@ background: #43A047;
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -655,7 +655,7 @@ background: #43A047;
         </column>
         <column>
          <property name="text">
-          <string>Back</string>
+          <string>Deck</string>
          </property>
         </column>
         <column>

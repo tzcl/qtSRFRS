@@ -25,6 +25,8 @@ public:
 
     void renameDeck(QString oldName, Deck &deck);
 
+    void update(QString deckName, int index, QString after);
+
     QStringList deckNames();
 
     Deck getDeck(QString deckName);

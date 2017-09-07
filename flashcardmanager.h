@@ -24,6 +24,8 @@ public:
 
     void setID(int index, int oldId, int id);
 
+    void update(int id, int index, QString after);
+
     Flashcard getFlashcard(int ID);
 
     QVector<Flashcard> getFlashcards() { return _cards; }

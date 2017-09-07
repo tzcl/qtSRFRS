@@ -2,10 +2,10 @@
 
 #include <QDebug>
 #include <QMessageBox>
-#include <QTableWidgetItem>
-#include <QToolButton>
-#include <QSignalMapper>
 #include <QString>
+#include <QStringList>
+#include <QTextStream>
+#include <QFile>
 
 SRFRS::DeckManager::DeckManager() :
     _user(),
@@ -57,7 +57,6 @@ void SRFRS::DeckManager::addDeck(Deck& deck)
     _collection.addDeck(deck);
 }
 
-
 void SRFRS::DeckManager::removeDeck(QString deckName)
 {
     _collection.removeDeck(getDeck(deckName));
@@ -66,4 +65,35 @@ void SRFRS::DeckManager::removeDeck(QString deckName)
 void SRFRS::DeckManager::renameDeck(QString oldName, Deck &deck)
 {
     _collection.renameDeck(oldName, deck);
+}
+
+void SRFRS::DeckManager::update(QString deckName, int index, QString after)
+{
+    // update decks file
+    QFile deckFile(_dirPath + "/.decks");
+
+    if(deckFile.open(QIODevice::ReadWrite)) {
+
+        QString existingText;
+        QTextStream stream(&deckFile);
+
+        while(!stream.atEnd()){
+
+            QString line = stream.readLine();
+            QStringList parts = line.split(";;");
+
+            if(parts.at(0) == deckName) {
+                parts[index] = after;
+            }
+
+            line = parts.join(";;");
+
+            existingText.append(line + "\n");
+        }
+
+        deckFile.resize(0);
+        stream << existingText;
+
+        deckFile.close();
+    }
 }

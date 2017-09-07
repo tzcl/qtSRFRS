@@ -20,16 +20,16 @@ SRFRS::Deck::Deck(QString name, int flashcards, QDate date) :
 
 }
 
-void SRFRS::Deck::addCards(QVector<Flashcard> &add_cards)
+void SRFRS::Deck::addCard()
 {
-    for (int i = 0; i < add_cards.size(); ++i) {
-        if(!_flashcards.contains(add_cards.at(i))) _flashcards.append(add_cards.at(i));
-    }
+    _flashcards++;
 }
 
-void SRFRS::Deck::removeCards(QVector<Flashcard> &remove_cards)
+void SRFRS::Deck::removeCard()
 {
-    for(int i = 0; i < remove_cards.size(); ++i) {
-        if(_flashcards.contains(remove_cards.at(i))) _flashcards.remove(i);
-    }
+//    if(_flashcards == 0) {
+//        qDebug() << "0 flashcards";
+//    } else {
+//        _flashcards--;
+//    }
 }

@@ -13,7 +13,7 @@
 
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QDebug>
 #include <QMenu>
@@ -139,10 +139,13 @@ void MainWindow::mainInitUI()
 
     // take care of resizing
     ui->flashcards_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
     ui->flashcards_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     ui->flashcards_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     ui->flashcards_table->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+
+    // give front column fixed size of 100
+    ui->flashcards_table->horizontalHeader()->resizeSection(1, 250);
 }
 
 void MainWindow::toggleButtonState(QPushButton *button, bool state) {
@@ -176,7 +179,6 @@ void MainWindow::login() {
     // set username label
     ui->lbl_username->setText("Hi, " + _username + "!");
     ui->lbl_username->adjustSize();
-    //ui->lbl_username->setFixedHeight(45);
     ui->lbl_username->move(ui->btn_logout->x() + ui->btn_logout->width() - ui->lbl_username->width() - 8, 22);
 
     // initialise deckManager
@@ -200,10 +202,8 @@ void MainWindow::login() {
 }
 
 void MainWindow::logout() {
-    // logout stuff here
-    // write to database, move to login screen
-
-    // securely close user files
+    _flashcardManager.save();
+    _deckManager.getCollection().save();
 
     moveToLogin();
 }
@@ -285,7 +285,9 @@ void MainWindow::deck_rename(QString deckName)
     int row = -1;
 
     for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
-        if(ui->decks_table->item(i, 0)->text() == deckName) row = i;
+        if(ui->decks_table->item(i, 0)->text() == deckName) {
+            row = i;
+        }
     }
 
     // only if valid row
@@ -302,7 +304,6 @@ void MainWindow::deck_edit(QString deckName)
     DeckEditor de(deckName, _deckManager.getDeck(deckName), this);
     de.exec();
 }
-
 
 void MainWindow::deck_delete(QString deckName)
 {
@@ -330,6 +331,7 @@ int MainWindow::getDeckRow(QString deckName)
 void MainWindow::addFlashcard(SRFRS::Flashcard &card)
 {
     _flashcardManager.addFlashcard(card);
+    addFlashcardToDeck(card.getID(), card.getDeck());
     addFlashcardToTable(card);
 }
 
@@ -343,7 +345,7 @@ void MainWindow::addFlashcardToTable(const SRFRS::Flashcard &card)
 
     ui->flashcards_table->setItem(row, 0, new QTableWidgetItem(QString::number(card.getID())));
     ui->flashcards_table->setItem(row, 1, new QTableWidgetItem(card.getFront()));
-    ui->flashcards_table->setItem(row, 2, new QTableWidgetItem(card.getBack()));
+    ui->flashcards_table->setItem(row, 2, new QTableWidgetItem(card.getDeck()));
     ui->flashcards_table->setItem(row, 3, new QTableWidgetItem(card.getDate().toString("dd/MM/yyyy")));
 
     addFlashcardButton(row, card.getID());
@@ -351,14 +353,33 @@ void MainWindow::addFlashcardToTable(const SRFRS::Flashcard &card)
     ui->flashcards_table->setSortingEnabled(true);
 }
 
+void MainWindow::addFlashcardToDeck(int id, QString deckName)
+{
+    // add flashcard to deck's flashcard vector
+    SRFRS::Deck &deck = _deckManager.getDeck(deckName);
+    deck.addCard();
+
+    // write to file
+    _deckManager.update(deckName, 1, QString::number(deck.getFlashcards().size()));
+
+    // update decks table
+    for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+        if(ui->decks_table->item(i, 0)->text() == deckName) {
+            ui->decks_table->item(i, 1)->setText(QString::number(deck.getFlashcards().size()));
+        }
+    }
+}
+
 void MainWindow::addFlashcardButton(int row, int ID)
 {
     QToolButton *button = new QToolButton();
     QMenu *menu = new QMenu(this);
 
+    QAction *action_preview = new QAction("Preview", this);
     QAction *action_edit = new QAction("Edit", this);
     QAction *action_delete = new QAction("Delete", this);
 
+    menu->addAction(action_preview);
     menu->addAction(action_edit);
     menu->addAction(action_delete);
 
@@ -367,19 +388,28 @@ void MainWindow::addFlashcardButton(int row, int ID)
     button->setMenu(menu);
     button->setPopupMode(QToolButton::InstantPopup);
 
+    QSignalMapper *mapper_preview = new QSignalMapper();
     QSignalMapper *mapper_edit = new QSignalMapper();
     QSignalMapper *mapper_delete = new QSignalMapper();
 
+    connect(action_preview, SIGNAL(triggered()), mapper_preview, SLOT(map()));
     connect(action_edit, SIGNAL(triggered()), mapper_edit, SLOT(map()));
     connect(action_delete, SIGNAL(triggered()), mapper_delete, SLOT(map()));
 
+    mapper_preview->setMapping(action_preview, ID);
     mapper_edit->setMapping(action_edit, ID);
     mapper_delete->setMapping(action_delete, ID);
 
+    connect(mapper_preview, SIGNAL(mapped(int)), this, SLOT(flashcard_preview(int)));
     connect(mapper_edit, SIGNAL(mapped(int)), this, SLOT(flashcard_edit(int)));
     connect(mapper_delete, SIGNAL(mapped(int)), this, SLOT(flashcard_delete(int)));
 
     ui->flashcards_table->setCellWidget(row, 4, button);
+}
+
+void MainWindow::flashcard_preview(int ID)
+{
+    qDebug() << "previewing";
 }
 
 void MainWindow::flashcard_edit(int ID)
@@ -389,10 +419,24 @@ void MainWindow::flashcard_edit(int ID)
 
 void MainWindow::flashcard_delete(int ID)
 {
+    SRFRS::Flashcard card = _flashcardManager.getFlashcard(ID);
     // warn user before deleting
-    if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Are you sure you want to delete your flashcard? (ID: " + QString::number(ID) + ")", QMessageBox::Yes|QMessageBox::No, this).exec())
+    if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Are you sure you want to delete your flashcard (ID: " + QString::number(ID) + ")?\nThis will remove it from your deck, \"" + card.getDeck() + "\".", QMessageBox::Yes|QMessageBox::No, this).exec())
     {
-        // some warning about removing flashcard from decks
+        // remove from deck
+        SRFRS::Deck deck = _deckManager.getDeck(card.getDeck());
+        deck.removeCard();
+
+        // write to file
+        _deckManager.update(deck.getName(), 1, deck.getFlashcards());
+
+        // update decks table
+        for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+            if(ui->decks_table->item(i, 0)->text() == deck.getName()) {
+                ui->decks_table->item(i, 1)->setText(deck.getFlashcards());
+            }
+        }
+
         int row = getFlashcardRow(ID);
         _flashcardManager.removeFlashcard(_flashcardManager.getFlashcard(ID));
 
@@ -418,8 +462,11 @@ void MainWindow::resetFlashcardIDs()
 {
     for(int i = 0; i < _flashcardManager.getFlashcards().size(); ++i) {
         int row = getFlashcardRow(_flashcardManager.getFlashcards().at(i).getID());
+
         _flashcardManager.setID(i, ui->flashcards_table->item(row, 0)->text().toInt(), i);
         ui->flashcards_table->setItem(row, 0, new QTableWidgetItem(QString::number(i)));
+
+        addFlashcardButton(row, i);
     }
 }
 
@@ -449,7 +496,6 @@ void MainWindow::on_btn_login_clicked()
     }
 }
 
-
 void MainWindow::on_btn_logout_clicked()
 {
     if (QMessageBox::Yes == QMessageBox(QMessageBox::Question, "SRFRS", "Are you sure you want to log out?", QMessageBox::Yes|QMessageBox::No, this).exec())
@@ -472,8 +518,8 @@ void MainWindow::on_btn_register_clicked()
 {
     QString username = ui->txt_register_username->text();
     QString password = ui->txt_register_password->text();
-    QRegExp invalidUsernameCharacters("([^A-Za-z0-9-_])");
-    QRegExp invalidPasswordCharacters("([^A-Za-z0-9-_!@#$%^&*])");
+    QRegularExpression invalidUsernameCharacters("([^A-Za-z0-9-_])");
+    QRegularExpression invalidPasswordCharacters("([^A-Za-z0-9-_!@#$%^&*])");
 
     moveToRegister();
 
@@ -573,8 +619,14 @@ void MainWindow::on_btn_settings_clicked()
 
 void MainWindow::on_create_flashcard_clicked()
 {
-    FlashcardCreator fc(this);
-    fc.exec();
+    QStringList _deckNames = deckNames();
+    if(_deckNames.empty()) {
+        QMessageBox::warning(this, "SRFRS", "You need a deck to add flashcards to :-(\nPlease click OK and create a deck.");
+        ui->tabWidget->setCurrentIndex(1);
+    } else {
+        FlashcardCreator fc(_deckNames, this);
+        fc.exec();
+    }
 }
 
 void MainWindow::on_create_deck_clicked()
@@ -585,6 +637,7 @@ void MainWindow::on_create_deck_clicked()
 
 void MainWindow::on_decks_table_cellDoubleClicked(int row, int column)
 {
+    // TODO: change this (user testing --> familiarity)
     if(column == 0) {
         QString deckName = ui->decks_table->item(row, 0)->text();
         DeckEditor de(deckName, _deckManager.getDeck(deckName), this);

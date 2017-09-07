@@ -38,7 +38,7 @@ bool SRFRS::FlashcardManager::load()
             QStringList line = stream.readLine().split(";;");
 
             // get the flashcard data
-            Flashcard card(line.at(0).toInt(), line.at(1), line.at(2), QDate::fromString(line.at(3), "dd/MM/yyyy"));
+            Flashcard card(line.at(0).toInt(), line.at(1), line.at(2), line.at(3), QDate::fromString(line.at(4), "dd/MM/yyyy"));
             _cards.append(card);
         }
 
@@ -62,6 +62,7 @@ bool SRFRS::FlashcardManager::save()
             stream << _cards.at(i).getID() + ";;";
             stream << _cards.at(i).getFront() + ";;";
             stream << _cards.at(i).getBack() + ";;";
+            stream << _cards.at(i).getDeck() + ";;";
             stream << _cards.at(i).getDate().toString("dd/MM/yyyy");
             stream << endl;
         }
@@ -88,6 +89,7 @@ bool SRFRS::FlashcardManager::addFlashcard(Flashcard &card)
         stream << QString::number(card.getID()) + ";;";
         stream << card.getFront() + ";;";
         stream << card.getBack() + ";;";
+        stream << card.getDeck() + ";;";
         stream << card.getDate().toString("dd/MM/yyyy");
         stream << endl;
 
@@ -122,19 +124,19 @@ void SRFRS::FlashcardManager::setID(int index, int oldId, int id)
         QString existingText;
         QTextStream stream(&cardFile);
 
+        QRegExp regex("^(\\d+);;");
+
         while(!stream.atEnd()){
 
             QString line = stream.readLine();
-            QString existingId = line.split(";;").at(0);
 
-            // regexp to make sure getting the id
-            // $(\d+);;
-
-            if(existingId == QString::number(oldId)){
-                line.replace(existingId + ";;", QString::number(id) + ";;");
-                existingText.append(line + "\n");
-            } else {
-                existingText.append(line + "\n");
+            if(line.contains(regex)) {
+                if(regex.cap(1) == QString::number(oldId)){
+                    line.replace(regex, QString::number(id) + ";;");
+                    existingText.append(line + "\n");
+                } else {
+                    existingText.append(line + "\n");
+                }
             }
         }
 
@@ -176,4 +178,35 @@ bool SRFRS::FlashcardManager::removeFlashcard(Flashcard &card)
     }
 
     return true;
+}
+
+void SRFRS::FlashcardManager::update(int id, int index, QString after)
+{
+    // update cards file
+    QFile cardFile(_dirPath + "/.cards");
+
+    if(cardFile.open(QIODevice::ReadWrite)) {
+
+        QString existingText;
+        QTextStream stream(&cardFile);
+
+        while(!stream.atEnd()){
+
+            QString line = stream.readLine();
+            QStringList parts = line.split(";;");
+
+            if(parts.at(0) == QString::number(id)) {
+                parts[index] = after;
+            }
+
+            line = parts.join(";;");
+
+            existingText.append(line + "\n");
+        }
+
+        cardFile.resize(0);
+        stream << existingText;
+
+        cardFile.close();
+    }
 }

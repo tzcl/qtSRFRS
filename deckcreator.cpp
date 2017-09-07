@@ -14,6 +14,10 @@ DeckCreator::DeckCreator(QWidget *parent) :
     ui->setupUi(this);
 
     setWindowTitle("SRFRS");
+
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+    ui->txt_name->setStyleSheet("background: red");
+
     ui->txt_name->setFocus();
 }
 
@@ -36,6 +40,9 @@ void DeckCreator::on_buttonBox_accepted()
 void DeckCreator::on_txt_name_textEdited(const QString &string)
 {
     if(getParent()->deckNames().contains(string)) {
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+        ui->txt_name->setStyleSheet("background: red");
+    } else if(string == "") {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->txt_name->setStyleSheet("background: red");
     } else {

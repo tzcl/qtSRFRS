@@ -37,7 +37,10 @@ void DeckRenamer::on_txt_name_textEdited(const QString &string)
     if(getParent()->deckNames().contains(string)) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->txt_name->setStyleSheet("background: red");
-    } else {
+    } else if(string == "") {
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+        ui->txt_name->setStyleSheet("background: red");
+    }else {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
         ui->txt_name->setStyleSheet("");
     }

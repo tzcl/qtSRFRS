@@ -6,21 +6,24 @@
 #include <QDebug>
 #include <QDate>
 
-FlashcardCreator::FlashcardCreator(QWidget *parent) :
+FlashcardCreator::FlashcardCreator(QStringList decks, QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::FlashcardCreator)
 {
     ui->setupUi(this);
 
     setWindowTitle("SRFRS");
-    ui->lbl_front_text->setFocus();
+
+    ui->lbl_deck->adjustSize();
+
+    ui->cb_decks->insertItems(0, decks);
 
     // disable tab as input, make it change text boxes
     ui->txt_front->setTabChangesFocus(true);
     ui->txt_back->setTabChangesFocus(true);
 
-    // give focus to front editor
-    ui->txt_front->setFocus();
+    // give focus to deck chooser
+    ui->cb_decks->setFocus();
 }
 
 FlashcardCreator::~FlashcardCreator()
@@ -38,7 +41,7 @@ void FlashcardCreator::on_buttonBox_accepted()
     // validate input
 
     // 0 index or 1 index?
-    SRFRS::Flashcard newCard(getParent()->getFlashcardID(), ui->txt_front->toPlainText(), ui->txt_back->toPlainText(), QDate::currentDate());
+    SRFRS::Flashcard newCard(getParent()->getFlashcardID(), ui->txt_front->toPlainText(), ui->txt_back->toPlainText(), ui->cb_decks->currentText(), QDate::currentDate());
 
     getParent()->addFlashcard(newCard);
 }

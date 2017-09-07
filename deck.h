@@ -18,31 +18,18 @@ public:
 
     void remove(bool remove) { _remove = remove; }
 
+    void addCard();
+
+    void removeCard();
+
     QString getName() const { return _name; }
     void setName(QString name) { _name = name; }
 
-    QString getFlashcards() const { return QString::number(_flashcards.size()); }
+    QString getFlashcards() const { return QString::number(_flashcards); }
 
     QDate getDate() const { return _date; }
     void setDate(QString date) { _date = QDate::fromString(date, "d/M/yyyy"); }
 
-    /**
-     * @brief addCard: Adds the card to the deck, given it is not already in the deck.
-     * @param card: The card to add.
-     */
-    void addCard(Flashcard &card);
-
-    /**
-     * @brief addCards: Adds new cards to the deck, only if they are not already in the deck.
-     * @param add_cards: Reference to a list of flashcards to add.
-     */
-    void addCards(QVector<Flashcard> &add_cards);
-
-    /**
-     * @brief removeCards: Removes cards from the deck, given they are already in the deck.
-     * @param remove_cards: Reference to a list of flashcards to remove.
-     */
-    void removeCards(QVector<Flashcard> &remove_cards);
 
     /**
      * @brief operator ==: Overload the binary equality operator.
@@ -56,7 +43,7 @@ public:
 
 private:
     QString _name;
-    QVector<Flashcard> _flashcards;
+    int _flashcards;
     QDate _date;
 
     bool _remove;

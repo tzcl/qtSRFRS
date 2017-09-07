@@ -77,6 +77,8 @@ public:
 
     void addFlashcardToTable(const SRFRS::Flashcard &card);
 
+    void addFlashcardToDeck(int id, QString deckName);
+
     void addFlashcardButton(int row, int ID);
 
     void addFlashcard(SRFRS::Flashcard &card);
@@ -121,6 +123,8 @@ private slots:
     void deck_delete(QString deckName);
 
     void on_decks_table_cellDoubleClicked(int row, int column);
+
+    void flashcard_preview(int ID);
 
     void flashcard_edit(int ID);
 
