@@ -1,10 +1,7 @@
 #include "deckcreator.h"
 #include "ui_deckcreator.h"
 
-#include "deck.h"
-
 #include <QDebug>
-#include <QDate>
 #include <QMessageBox>
 
 DeckCreator::DeckCreator(QWidget *parent) :
@@ -14,6 +11,10 @@ DeckCreator::DeckCreator(QWidget *parent) :
     ui->setupUi(this);
 
     setWindowTitle("SRFRS");
+
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+    ui->txt_name->setStyleSheet("background: red");
+
     ui->txt_name->setFocus();
 }
 
@@ -28,18 +29,19 @@ MainWindow* DeckCreator::getParent() {
 
 void DeckCreator::on_buttonBox_accepted()
 {
-    SRFRS::Deck deck(ui->txt_name->text(), 0, QDate::currentDate());
-
-    getParent()->addDeck(deck);
+    getParent()->addDeck(ui->txt_name->text());
 }
 
 void DeckCreator::on_txt_name_textEdited(const QString &string)
 {
-    if(getParent()->deckNames().contains(string)) {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        ui->txt_name->setStyleSheet("background: red");
-    } else {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-        ui->txt_name->setStyleSheet("");
-    }
+    if(getParent()->getDeckManager().getDeckNames().contains(string)) {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+            ui->txt_name->setStyleSheet("background: red");
+        } else if(string == "") {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+            ui->txt_name->setStyleSheet("background: red");
+        } else {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+            ui->txt_name->setStyleSheet("");
+        }
 }

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>437</width>
-    <height>358</height>
+    <width>640</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,10 +16,10 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>80</x>
-     <y>310</y>
-     <width>341</width>
-     <height>32</height>
+     <x>440</x>
+     <y>410</y>
+     <width>171</width>
+     <height>61</height>
     </rect>
    </property>
    <property name="orientation">
@@ -29,53 +29,133 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QLabel" name="lbl_front_text">
+  <widget class="QPushButton" name="btn_add_image">
    <property name="geometry">
     <rect>
-     <x>44</x>
-     <y>50</y>
+     <x>490</x>
+     <y>20</y>
+     <width>101</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
+   <property name="text">
+    <string>Add image</string>
+   </property>
+  </widget>
+  <widget class="QScrollArea" name="scrollArea">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>90</y>
+     <width>591</width>
+     <height>321</height>
+    </rect>
+   </property>
+   <property name="widgetResizable">
+    <bool>true</bool>
+   </property>
+   <widget class="QWidget" name="scrollAreaWidgetContents">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>589</width>
+      <height>319</height>
+     </rect>
+    </property>
+    <widget class="QTextEdit" name="txt_front">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>30</y>
+       <width>531</width>
+       <height>115</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="txt_back">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>190</y>
+       <width>531</width>
+       <height>115</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lbl_back_text">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>170</y>
+       <width>41</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Back:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lbl_front_text">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>10</y>
+       <width>41</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Front:</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QLabel" name="lbl_deck">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
      <width>41</width>
      <height>31</height>
     </rect>
    </property>
-   <property name="text">
-    <string>Front:</string>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
-  </widget>
-  <widget class="QLabel" name="lbl_back_text">
-   <property name="geometry">
-    <rect>
-     <x>40</x>
-     <y>180</y>
-     <width>41</width>
-     <height>31</height>
-    </rect>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
    </property>
    <property name="text">
-    <string>Back:</string>
+    <string>DECK</string>
    </property>
   </widget>
-  <widget class="QTextEdit" name="txt_front">
+  <widget class="QComboBox" name="cb_decks">
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>10</y>
-     <width>291</width>
-     <height>141</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QTextEdit" name="txt_back">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>170</y>
-     <width>291</width>
-     <height>131</height>
+     <y>20</y>
+     <width>281</width>
+     <height>41</height>
     </rect>
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>cb_decks</tabstop>
+  <tabstop>txt_front</tabstop>
+  <tabstop>txt_back</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>btn_add_image</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

@@ -3,10 +3,9 @@
 
 #include <QString>
 
-DeckEditor::DeckEditor(QString name, SRFRS::Deck &deck, QWidget *parent) :
+DeckEditor::DeckEditor(QString name, QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
-    ui(new Ui::DeckEditor),
-    _deck(deck)
+    ui(new Ui::DeckEditor)
 {
     ui->setupUi(this);
 

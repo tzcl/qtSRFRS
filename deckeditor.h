@@ -14,15 +14,13 @@ class DeckEditor : public QDialog
     Q_OBJECT
 
 public:
-    explicit DeckEditor(QString name, SRFRS::Deck &deck, QWidget *parent = 0);
+    explicit DeckEditor(QString name, QWidget *parent = 0);
     ~DeckEditor();
 
 private slots:
 
 private:
     Ui::DeckEditor *ui;
-
-    SRFRS::Deck &_deck;
 };
 
 #endif // DECKEDITOR_H

@@ -61,33 +61,17 @@ public:
 
     Ui::MainWindow* getUI() { return ui; }
 
-    void addDeckToTable(const SRFRS::Deck &deck);
+    // deck methods
 
-    void removeDeckFromTable(const int row);
+    void addDeck(QString deckName);
 
-    void addDeck(SRFRS::Deck &deck);
+    void addDeckToTable(SRFRS::Deck deck);
 
-    void removeDeck(int row);
+    void addDeckButton(int row, QString deckName);
 
     int getDeckRow(QString deckName);
 
-    void addDeckButton(int row, QString name);
-
-    QStringList deckNames() { return _deckManager.deckNames(); }
-
-    void addFlashcardToTable(const SRFRS::Flashcard &card);
-
-    void addFlashcardButton(int row, int ID);
-
-    void addFlashcard(SRFRS::Flashcard &card);
-
-    void removeFlashcard(int row);
-
-    int getFlashcardRow(int ID);
-
-    int getFlashcardID() { return _flashcardManager.getFlashcards().size(); }
-
-    void resetFlashcardIDs();
+    // flashcard methods
 
 private slots:
     void on_btn_login_clicked();
@@ -121,6 +105,8 @@ private slots:
     void deck_delete(QString deckName);
 
     void on_decks_table_cellDoubleClicked(int row, int column);
+
+    void flashcard_preview(int ID);
 
     void flashcard_edit(int ID);
 

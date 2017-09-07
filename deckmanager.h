@@ -2,12 +2,11 @@
 #define DECKMANAGER_H
 
 #include <QVector>
+#include <QSharedPointer>
 #include <QDir>
-#include <QTableWidget>
-#include <QWidget>
 #include <QStringList>
 
-#include "collection.h"
+#include "deck.h"
 
 namespace SRFRS {
 
@@ -19,25 +18,30 @@ public:
 
     bool init(QString username, QString dirPath);
 
-    void addDeck(Deck &deck);
+    void addDeck(QSharedPointer<Deck> deck);
+
+    void renameDeck(QString oldName, QString newName);
 
     void removeDeck(QString deckName);
 
-    void renameDeck(QString oldName, Deck &deck);
+    QStringList getDeckNames();
 
-    QStringList deckNames();
+    QSharedPointer<Deck> getDeck(QString deckName);
 
-    Deck getDeck(QString deckName);
+    QVector<QSharedPointer<Deck>> getDecks() { return _decks; }
 
-    Collection getCollection() { return _collection; }
+    void update(QString deckName, int index, QString after);
 
 private: 
 
-    QString _user;
-    QString _dirPath;
-    QDir _dir;
+    bool load();
 
-    Collection _collection;
+    // read/write to .decks
+    QString _user;
+    QString _dir;
+
+    QVector<QSharedPointer<Deck>> _decks;
+
 };
 
 }

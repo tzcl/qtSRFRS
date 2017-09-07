@@ -10,7 +10,7 @@ class Flashcard
 {
 public:
     Flashcard();
-    Flashcard(int ID, QString front, QString back, QDate date);
+    Flashcard(int ID, QString front, QString back, QString deck, QDate date);
 
     int getID() const { return _ID; }
 
@@ -19,6 +19,10 @@ public:
     QString getFront() const { return _frontText; }
 
     QString getBack() const { return _backText; }
+
+    QString getDeck() const { return _deck; }
+
+    void setDeck(QString deck) { _deck = deck; }
 
     QDate getDate() const { return _dateCreated; }
 
@@ -34,13 +38,15 @@ public:
 
 private:
 
-    mutable int _ID;
+    int _ID;
 
     // card front
     QString _frontText;
 
     // card back
     QString _backText;
+
+    QString _deck;
 
     QDate _dateCreated;
 };

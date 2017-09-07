@@ -23,7 +23,6 @@ SOURCES += \
     deckmanager.cpp \
     flashcardcreator.cpp \
     deckcreator.cpp \
-    collection.cpp \
     deckeditor.cpp \
     deckrenamer.cpp \
     flashcardeditor.cpp \
@@ -38,7 +37,6 @@ HEADERS += \
     deckmanager.h \
     flashcardcreator.h \
     deckcreator.h \
-    collection.h \
     deckeditor.h \
     deckrenamer.h \
     flashcardeditor.h \

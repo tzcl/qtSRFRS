@@ -1,17 +1,16 @@
 #include "deckmanager.h"
 
 #include <QDebug>
-#include <QMessageBox>
-#include <QTableWidgetItem>
-#include <QToolButton>
-#include <QSignalMapper>
 #include <QString>
+#include <QTextStream>
+#include <QFile>
+#include <QDir>
+#include <QRegExp>
 
 SRFRS::DeckManager::DeckManager() :
     _user(),
-    _dirPath(),
     _dir(),
-    _collection()
+    _decks()
 {
 
 }
@@ -19,51 +18,165 @@ SRFRS::DeckManager::DeckManager() :
 bool SRFRS::DeckManager::init(QString username, QString dirPath)
 {
     _user = username;
-    _dirPath = dirPath + "/" + _user;
-    _dir = QDir(_dirPath);
+    _dir = dirPath + "/" + _user;
+    QDir directory = QDir(_dir);
 
     // make username folder in "AppData/Local/qtSRFRS" if folder doesn't exist
-    if(!_dir.exists()) _dir.mkpath(_dir.path());
+    if(!directory.exists()) directory.mkpath(directory.path());
 
-    // load collection
-    return _collection.load(_dirPath);
+    // load decks
+    return load();
 }
 
-SRFRS::Deck SRFRS::DeckManager::getDeck(QString deckName)
+bool SRFRS::DeckManager::load()
 {
-    for(int i = 0; i < _collection.getDecks().size(); ++i) {
-        if(_collection.getDecks()[i].getName() == deckName) {
-            return _collection.getDecks()[i];
-        }
+    QFile deckFile(_dir + "/.decks");
+
+    if(!deckFile.exists()) {
+        return deckFile.open(QIODevice::WriteOnly);
     }
 
-    qDebug() << "couldn't find deck :S in deckmanager getDeck";
-    return _collection.getDecks()[0];
+    if(deckFile.open(QIODevice::ReadOnly)) {
+        QTextStream stream(&deckFile);
+        while (!stream.atEnd()) {
+            QStringList line = stream.readLine().split(";;");
+
+            // get the deck data
+            auto deck = QSharedPointer<Deck>::create(line.at(0), line.at(1).toInt(), QDate::fromString(line.at(2), "dd/MM/yyyy"));
+            _decks.append(deck);
+        }
+
+        deckFile.close();
+    } else {
+        return false;
+    }
+
+    return true;
 }
 
-QStringList SRFRS::DeckManager::deckNames()
+void SRFRS::DeckManager::addDeck(QSharedPointer<Deck> deck)
+{
+    // add to decks
+    _decks.append(deck);
+
+    // write to .decks
+    QFile deckFile(_dir + "/.decks");
+
+    if (deckFile.open(QIODevice::Append)) {
+
+        QTextStream stream(&deckFile);
+
+        stream << deck->getName() + ";;";
+        stream << deck->getFlashcards() + ";;";
+        stream << deck->getDate().toString("dd/MM/yyyy");
+        stream << endl;
+
+        deckFile.close();
+    }
+}
+
+
+void SRFRS::DeckManager::renameDeck(QString oldName, QString newName)
+{
+    // rename in decks
+    getDeck(oldName)->setName(newName);
+
+    // rename in decks file
+    update(oldName, 0, newName);
+}
+
+void SRFRS::DeckManager::removeDeck(QString deckName)
+{
+    auto p_deck = getDeck(deckName);
+
+    // remove deck from _decks
+    if(_decks.contains(p_deck)) {
+        _decks.removeAll(p_deck);
+    } else {
+        qDebug() << "_decks doesn't contain " + deckName;
+    }
+
+    // remove deck from .decks
+    QFile deckFile(_dir + "/.decks");
+
+    if(deckFile.open(QIODevice::ReadWrite)) {
+
+        QString oldContents;
+        QTextStream newContents(&deckFile);
+
+        while(!newContents.atEnd()){
+
+            QStringList line = newContents.readLine().split(";;");
+
+            if(line.at(0) != deckName) {
+                oldContents.append(line.join(";;") + "\n");
+            }
+        }
+
+        deckFile.resize(0);
+        newContents << oldContents;
+
+        deckFile.close();
+    }
+}
+
+QStringList SRFRS::DeckManager::getDeckNames()
 {
     QStringList result;
 
-    for(int i = 0; i < _collection.getDecks().size(); ++i) {
-        result.append(_collection.getDecks().at(i).getName());
+    for(int i = 0; i < _decks.size(); ++i) {
+        result.append(_decks[i]->getName());
     }
 
     return result;
 }
 
-void SRFRS::DeckManager::addDeck(Deck& deck)
+QSharedPointer<SRFRS::Deck> SRFRS::DeckManager::getDeck(QString deckName)
 {
-    _collection.addDeck(deck);
+    for(int i = 0; i < _decks.size(); ++i) {
+        if(_decks[i]->getName() == deckName) {
+            return _decks[i];
+        }
+    }
+
+    qDebug() << "couldn't find deck :S in deckmanager getDeck!! UNDEFINED BEHAVIOUR AHEAD";
+    return _decks[0];
 }
 
-
-void SRFRS::DeckManager::removeDeck(QString deckName)
+void SRFRS::DeckManager::update(QString deckName, int index, QString after)
 {
-    _collection.removeDeck(getDeck(deckName));
-}
+    // only 3 possible data entries: name, flashcards, date
+    // therefore index must be between 0 and 2
+    if(index < 0 || index > 2) {
+        qDebug() << "index out of range!!";
+        return;
+    }
 
-void SRFRS::DeckManager::renameDeck(QString oldName, Deck &deck)
-{
-    _collection.renameDeck(oldName, deck);
+    // update cards file
+    QFile deckFile(_dir + "/.decks");
+
+    if(deckFile.open(QIODevice::ReadWrite)) {
+
+        QString existingText;
+        QTextStream stream(&deckFile);
+
+        while(!stream.atEnd()){
+
+            QString line = stream.readLine();
+            QStringList parts = line.split(";;");
+
+            if(parts.at(0) == deckName) {
+                parts[index] = after;
+            }
+
+            line = parts.join(";;");
+
+            existingText.append(line + "\n");
+        }
+
+        deckFile.resize(0);
+        stream << existingText;
+
+        deckFile.close();
+    }
 }

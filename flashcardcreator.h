@@ -2,6 +2,7 @@
 #define FLASHCARDCREATOR_H
 
 #include <QDialog>
+#include <QStringList>
 
 #include "flashcard.h"
 #include "mainwindow.h"
