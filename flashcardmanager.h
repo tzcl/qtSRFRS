@@ -5,7 +5,7 @@
 
 #include <QVector>
 #include <QString>
-#include <QDir>
+#include <QSharedPointer>
 
 namespace SRFRS {
 
@@ -14,10 +14,30 @@ class FlashcardManager
 public:
     FlashcardManager();
 
+    bool init(QString user, QString dir);
 
+    void addFlashcard(QSharedPointer<Flashcard> card);
+
+    void removeFlashcard(int id);
+
+    void setID(int index, int oldID, int ID);
+
+    int getValidID() { return _cards.size(); }
+
+    void update(int id, int index, QString after);
+
+    QSharedPointer<Flashcard> getFlashcard(int id);
+
+    QVector<QSharedPointer<Flashcard>> getFlashcards() { return _cards; }
 
 private:
 
+    bool load();
+
+    QString _user;
+    QString _dir;
+
+    QVector<QSharedPointer<Flashcard>> _cards;
 };
 
 }

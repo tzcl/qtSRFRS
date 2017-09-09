@@ -5,7 +5,6 @@
 #include <QTextStream>
 #include <QFile>
 #include <QDir>
-#include <QRegExp>
 
 SRFRS::DeckManager::DeckManager() :
     _user(),
@@ -148,7 +147,7 @@ void SRFRS::DeckManager::update(QString deckName, int index, QString after)
     // only 3 possible data entries: name, flashcards, date
     // therefore index must be between 0 and 2
     if(index < 0 || index > 2) {
-        qDebug() << "index out of range!!";
+        qDebug() << "index out of range!! " + QString::number(index) + " deck: " + deckName;
         return;
     }
 

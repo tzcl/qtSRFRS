@@ -436,7 +436,7 @@ background: #43A047;
          <string>REVIEW</string>
         </property>
        </widget>
-       <widget class="QTableWidget" name="flashcards_table_2">
+       <widget class="QTableWidget" name="review_table">
         <property name="geometry">
          <rect>
           <x>50</x>
@@ -497,7 +497,7 @@ background: #43A047;
         </column>
         <column>
          <property name="text">
-          <string>To Review</string>
+          <string>Flashcards To Review</string>
          </property>
         </column>
         <column>

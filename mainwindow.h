@@ -73,6 +73,18 @@ public:
 
     // flashcard methods
 
+    void addFlashcard(int id, QString front, QString back, QString deck);
+
+    void addFlashcardToDeck(int id, QString deckName);
+
+    void addFlashcardToTable(SRFRS::Flashcard flashcard);
+
+    void addFlashcardButton(int row, int id);
+
+    int getFlashcardRow(int id);
+
+    void resetFlashcardIDs();
+
 private slots:
     void on_btn_login_clicked();
 

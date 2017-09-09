@@ -16,7 +16,7 @@ class FlashcardCreator : public QDialog
     Q_OBJECT
 
 public:
-    explicit FlashcardCreator(QWidget *parent = 0);
+    explicit FlashcardCreator(QStringList decks, QWidget *parent = 0);
     ~FlashcardCreator();
 
     MainWindow* getParent();

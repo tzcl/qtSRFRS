@@ -12,19 +12,19 @@ public:
     Flashcard();
     Flashcard(int ID, QString front, QString back, QString deck, QDate date);
 
-    int getID() const { return _ID; }
+    int getID() { return _ID; }
 
     void setID(int id) { _ID = id; }
 
-    QString getFront() const { return _frontText; }
+    QString getFront() { return _frontText; }
 
-    QString getBack() const { return _backText; }
+    QString getBack() { return _backText; }
 
-    QString getDeck() const { return _deck; }
+    QString getDeck() { return _deck; }
 
     void setDeck(QString deck) { _deck = deck; }
 
-    QDate getDate() const { return _dateCreated; }
+    QDate getDate() { return _dateCreated; }
 
     /**
      * @brief operator ==: Overload the binary equality operator.

@@ -17,3 +17,13 @@ SRFRS::Deck::Deck(QString name, int flashcards, QDate date) :
 {
 
 }
+
+void SRFRS::Deck::addCard(QSharedPointer<Flashcard> card)
+{
+    _flashcards.append(card);
+}
+
+void SRFRS::Deck::removeCard(QSharedPointer<Flashcard> card)
+{
+    _flashcards.removeAll(card);
+}

@@ -41,7 +41,6 @@ private:
     QString _dir;
 
     QVector<QSharedPointer<Deck>> _decks;
-
 };
 
 }

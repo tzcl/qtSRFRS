@@ -5,7 +5,8 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QDate>
-#include <QDebug>
+
+#include "flashcard.h"
 
 namespace SRFRS {
 
@@ -17,7 +18,13 @@ public:
 
     QString getName() { return _name; }
 
-    QString getFlashcards() { return QString::number(_flashcards); }
+    void addCard(QSharedPointer<Flashcard> card);
+
+    void removeCard(QSharedPointer<Flashcard> card);
+
+    QVector<QSharedPointer<Flashcard>> getVector() { return _flashcards; }
+
+    QString getFlashcards() { return QString::number(_flashcards.size()); }
 
     QDate getDate() { return _date; }
 
@@ -35,7 +42,8 @@ public:
 
 private:
     QString _name;
-    int _flashcards;
+
+    QVector<QSharedPointer<Flashcard>> _flashcards;
     QDate _date;
 };
 
