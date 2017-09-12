@@ -34,7 +34,7 @@
     <rect>
      <x>490</x>
      <y>20</y>
-     <width>101</width>
+     <width>120</width>
      <height>41</height>
     </rect>
    </property>
@@ -42,77 +42,8 @@
     <enum>Qt::ClickFocus</enum>
    </property>
    <property name="text">
-    <string>Add image</string>
+    <string>Insert image</string>
    </property>
-  </widget>
-  <widget class="QScrollArea" name="scrollArea">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>90</y>
-     <width>591</width>
-     <height>321</height>
-    </rect>
-   </property>
-   <property name="widgetResizable">
-    <bool>true</bool>
-   </property>
-   <widget class="QWidget" name="scrollAreaWidgetContents">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>589</width>
-      <height>319</height>
-     </rect>
-    </property>
-    <widget class="QTextEdit" name="txt_front">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>30</y>
-       <width>531</width>
-       <height>115</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QTextEdit" name="txt_back">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>190</y>
-       <width>531</width>
-       <height>115</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="lbl_back_text">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>170</y>
-       <width>41</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Back:</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="lbl_front_text">
-     <property name="geometry">
-      <rect>
-       <x>40</x>
-       <y>10</y>
-       <width>41</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Front:</string>
-     </property>
-    </widget>
-   </widget>
   </widget>
   <widget class="QLabel" name="lbl_deck">
    <property name="geometry">
@@ -148,12 +79,55 @@
     </rect>
    </property>
   </widget>
+  <widget class="QLabel" name="lbl_front_text">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>80</y>
+     <width>41</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Front:</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="txt_front">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>100</y>
+     <width>560</width>
+     <height>140</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_back_text">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>250</y>
+     <width>41</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Back:</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="txt_back">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>270</y>
+     <width>560</width>
+     <height>140</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <tabstops>
   <tabstop>cb_decks</tabstop>
-  <tabstop>txt_front</tabstop>
-  <tabstop>txt_back</tabstop>
-  <tabstop>scrollArea</tabstop>
   <tabstop>btn_add_image</tabstop>
  </tabstops>
  <resources/>

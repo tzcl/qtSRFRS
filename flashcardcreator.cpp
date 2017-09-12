@@ -24,6 +24,8 @@ FlashcardCreator::FlashcardCreator(QStringList decks, QWidget *parent) :
 
     // give focus to deck chooser
     ui->cb_decks->setFocus();
+
+    // TODO: disable ok button until validated inputs
 }
 
 FlashcardCreator::~FlashcardCreator()
@@ -38,8 +40,13 @@ MainWindow* FlashcardCreator::getParent() {
 void FlashcardCreator::on_buttonBox_accepted()
 {
     // save front/back changes
-    // validate input
+
+    // TODO: validate input, NO ;; allowed
+    QString front = ui->txt_front->toPlainText();
+    QString back = ui->txt_back->toPlainText();
+
+    // write front, back to separate files
 
     // 0 index or 1 index?
-    getParent()->addFlashcard(getParent()->getFlashcardManager().getValidID(), ui->txt_front->toPlainText(), ui->txt_back->toPlainText(), ui->cb_decks->currentText());
+    getParent()->addFlashcard(getParent()->getFlashcardManager().getValidID(), front, back, ui->cb_decks->currentText());
 }

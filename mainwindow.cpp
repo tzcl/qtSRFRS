@@ -204,9 +204,14 @@ void MainWindow::login() {
 
     // initialise flashcardManager
     if(_flashcardManager.init(_username, _dirPath)) {
-        // add loaded flashcards to table
         for(int i = 0; i < _flashcardManager.getFlashcards().size(); ++i) {
-            addFlashcardToTable(*_flashcardManager.getFlashcards()[i]);
+            auto flashcard = _flashcardManager.getFlashcards()[i];
+
+            // add loaded flashcards to table
+            addFlashcardToTable(*flashcard);
+
+            // also add flashcards to decks
+            addFlashcardToDeck(i, flashcard->getDeck());
         }
     } else {
         qDebug() << "error initialising _flashcardManager!!";
@@ -225,7 +230,7 @@ void MainWindow::logout() {
 
 void MainWindow::addDeck(QString deckName)
 {
-    auto deck = QSharedPointer<SRFRS::Deck>::create(deckName, 0, QDate::currentDate());
+    auto deck = QSharedPointer<SRFRS::Deck>::create(deckName, QDate::currentDate());
 
     // add to deckmanager
     _deckManager.addDeck(deck);
@@ -385,9 +390,6 @@ void MainWindow::addFlashcardToDeck(int id, QString deckName)
     // use id to identify which card to add
     deck->addCard(_flashcardManager.getFlashcard(id));
 
-    // write to file
-    _deckManager.update(deckName, 1, deck->getFlashcards());
-
     // update decks table
     for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
         if(ui->decks_table->item(i, 0)->text() == deckName) {
@@ -499,9 +501,6 @@ void MainWindow::flashcard_delete(int ID)
         auto deck = _deckManager.getDeck(card->getDeck());
         deck->removeCard(_flashcardManager.getFlashcard(ID));
 
-        // write to file
-        _deckManager.update(deck->getName(), 1, deck->getFlashcards());
-
         // update decks table
         for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
             if(ui->decks_table->item(i, 0)->text() == deck->getName()) {
@@ -511,6 +510,8 @@ void MainWindow::flashcard_delete(int ID)
 
         // remove flashcard
         _flashcardManager.removeFlashcard(ID);
+
+        // TODO: NEED TO REMOVE FILES ASSOCIATED WITH FLASHCARD
 
         // update flashcards table
         int row = getFlashcardRow(ID);

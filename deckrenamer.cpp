@@ -16,6 +16,8 @@ DeckRenamer::DeckRenamer(SRFRS::Deck &deck, QWidget *parent) :
 
     ui->txt_name->setText(deck.getName());
     ui->txt_name->setFocus();
+
+    // TODO: validate input, no ;;
 }
 
 DeckRenamer::~DeckRenamer()
@@ -35,13 +37,19 @@ void DeckRenamer::on_buttonBox_accepted()
 void DeckRenamer::on_txt_name_textEdited(const QString &string)
 {
     if(getParent()->getDeckManager().getDeckNames().contains(string)) {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        ui->txt_name->setStyleSheet("background: red");
-    } else if(string == "") {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        ui->txt_name->setStyleSheet("background: red");
-    } else {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-        ui->txt_name->setStyleSheet("");
-    }
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+            ui->txt_name->setStyleSheet("background: red");
+            ui->buttonBox->setToolTip("Deck name already taken");
+        } else if(string == "") {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+            ui->txt_name->setStyleSheet("background: red");
+            ui->buttonBox->setToolTip("Deck name can't be empty");
+        } else if(string.contains(";;")) {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+            ui->txt_name->setStyleSheet("background: red");
+            ui->buttonBox->setToolTip("Deck name can't contain ;;");
+        } else {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+            ui->txt_name->setStyleSheet("");
+        }
 }

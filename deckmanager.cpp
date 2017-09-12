@@ -41,7 +41,7 @@ bool SRFRS::DeckManager::load()
             QStringList line = stream.readLine().split(";;");
 
             // get the deck data
-            auto deck = QSharedPointer<Deck>::create(line.at(0), line.at(1).toInt(), QDate::fromString(line.at(2), "dd/MM/yyyy"));
+            auto deck = QSharedPointer<Deck>::create(line.at(0), QDate::fromString(line.at(1), "dd/MM/yyyy"));
             _decks.append(deck);
         }
 
@@ -66,7 +66,6 @@ void SRFRS::DeckManager::addDeck(QSharedPointer<Deck> deck)
         QTextStream stream(&deckFile);
 
         stream << deck->getName() + ";;";
-        stream << deck->getFlashcards() + ";;";
         stream << deck->getDate().toString("dd/MM/yyyy");
         stream << endl;
 
@@ -144,9 +143,9 @@ QSharedPointer<SRFRS::Deck> SRFRS::DeckManager::getDeck(QString deckName)
 
 void SRFRS::DeckManager::update(QString deckName, int index, QString after)
 {
-    // only 3 possible data entries: name, flashcards, date
-    // therefore index must be between 0 and 2
-    if(index < 0 || index > 2) {
+    // only 3 possible data entries: name, date
+    // therefore index must be between 0 and 1
+    if(index < 0 || index > 1) {
         qDebug() << "index out of range!! " + QString::number(index) + " deck: " + deckName;
         return;
     }

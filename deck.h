@@ -14,7 +14,7 @@ class Deck
 {
 public:
     Deck();
-    explicit Deck(QString name, int flashcards, QDate date);
+    explicit Deck(QString name, QDate date);
 
     QString getName() { return _name; }
 
@@ -42,7 +42,6 @@ public:
 
 private:
     QString _name;
-
     QVector<QSharedPointer<Flashcard>> _flashcards;
     QDate _date;
 };

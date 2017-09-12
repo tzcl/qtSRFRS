@@ -10,9 +10,9 @@ SRFRS::Deck::Deck() :
 
 }
 
-SRFRS::Deck::Deck(QString name, int flashcards, QDate date) :
+SRFRS::Deck::Deck(QString name, QDate date) :
     _name(name),
-    _flashcards(flashcards),
+    _flashcards(),
     _date(date)
 {
 
