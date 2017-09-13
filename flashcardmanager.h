@@ -24,6 +24,8 @@ public:
 
     int getValidID() { return _cards.size(); }
 
+    void renameFiles(int oldId, int id);
+
     void update(int id, int index, QString after);
 
     QSharedPointer<Flashcard> getFlashcard(int id);

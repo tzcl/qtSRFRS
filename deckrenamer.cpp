@@ -16,8 +16,6 @@ DeckRenamer::DeckRenamer(SRFRS::Deck &deck, QWidget *parent) :
 
     ui->txt_name->setText(deck.getName());
     ui->txt_name->setFocus();
-
-    // TODO: validate input, no ;;
 }
 
 DeckRenamer::~DeckRenamer()
@@ -51,5 +49,6 @@ void DeckRenamer::on_txt_name_textEdited(const QString &string)
         } else {
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
             ui->txt_name->setStyleSheet("");
+            ui->buttonBox->setToolTip("");
         }
 }

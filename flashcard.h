@@ -2,6 +2,7 @@
 #define FLASHCARD_H
 
 #include <QString>
+#include <QStringList>
 #include <QDate>
 
 namespace SRFRS {
@@ -10,15 +11,15 @@ class Flashcard
 {
 public:
     Flashcard();
-    Flashcard(int ID, QString front, QString back, QString deck, QDate date);
+    Flashcard(int ID, QStringList front, QStringList back, QString deck, QDate date);
 
     int getID() { return _ID; }
 
     void setID(int id) { _ID = id; }
 
-    QString getFront() { return _frontText; }
+    QStringList getFront() { return _frontText; }
 
-    QString getBack() { return _backText; }
+    QStringList getBack() { return _backText; }
 
     QString getDeck() { return _deck; }
 
@@ -41,10 +42,10 @@ private:
     int _ID;
 
     // card front
-    QString _frontText;
+    QStringList _frontText;
 
     // card back
-    QString _backText;
+    QStringList _backText;
 
     QString _deck;
 

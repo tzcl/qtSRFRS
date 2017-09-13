@@ -17,7 +17,7 @@ SRFRS::DeckManager::DeckManager() :
 bool SRFRS::DeckManager::init(QString username, QString dirPath)
 {
     _user = username;
-    _dir = dirPath + "/" + _user;
+    _dir = dirPath + "/" + _user + "/decks";
     QDir directory = QDir(_dir);
 
     // make username folder in "AppData/Local/qtSRFRS" if folder doesn't exist
@@ -65,9 +65,7 @@ void SRFRS::DeckManager::addDeck(QSharedPointer<Deck> deck)
 
         QTextStream stream(&deckFile);
 
-        stream << deck->getName() + ";;";
-        stream << deck->getDate().toString("dd/MM/yyyy");
-        stream << endl;
+        stream << deck->getName() + ";;" << deck->getDate().toString("dd/MM/yyyy") << endl;
 
         deckFile.close();
     }
@@ -143,7 +141,7 @@ QSharedPointer<SRFRS::Deck> SRFRS::DeckManager::getDeck(QString deckName)
 
 void SRFRS::DeckManager::update(QString deckName, int index, QString after)
 {
-    // only 3 possible data entries: name, date
+    // only 2 possible data entries: name, date last reviewed
     // therefore index must be between 0 and 1
     if(index < 0 || index > 1) {
         qDebug() << "index out of range!! " + QString::number(index) + " deck: " + deckName;

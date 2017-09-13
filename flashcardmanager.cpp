@@ -13,7 +13,7 @@ SRFRS::FlashcardManager::FlashcardManager()
 bool SRFRS::FlashcardManager::init(QString username, QString dirPath)
 {
     _user = username;
-    _dir = dirPath + "/" + _user;
+    _dir = dirPath + "/" + _user + "/cards";
     QDir directory = QDir(_dir);
 
     // make username folder in "AppData/Local/qtSRFRS" if folder doesn't exist
@@ -37,8 +37,38 @@ bool SRFRS::FlashcardManager::load()
         while (!stream.atEnd()) {
             QStringList line = stream.readLine().split(";;");
 
+            QFile front(_dir + "/" + line.at(0) + ".front");
+            QStringList frontText;
+
+            if(front.open(QIODevice::ReadOnly)) {
+                QTextStream stream(&front);
+
+                while (!stream.atEnd()) {
+                    QString text = stream.readLine();
+                    qDebug() << text;
+                    frontText.append(text);
+                }
+
+                front.close();
+            }
+
+            QFile back(_dir + "/" + line.at(0) + ".back");
+            QStringList backText;
+
+            if(back.open(QIODevice::ReadOnly)) {
+                QTextStream stream(&back);
+
+                while (!stream.atEnd()) {
+                    QString text = stream.readLine();
+                    qDebug() << text;
+                    backText.append(text);
+                }
+
+                back.close();
+            }
+
             // get the flashcard data
-            auto card = QSharedPointer<Flashcard>::create(line.at(0).toInt(), line.at(1), line.at(2), line.at(3), QDate::fromString(line.at(4), "dd/MM/yyyy"));
+            auto card = QSharedPointer<Flashcard>::create(line.at(0).toInt(), frontText, backText, line.at(1), QDate::fromString(line.at(2), "dd/MM/yyyy"));
             _cards.append(card);
         }
 
@@ -63,13 +93,47 @@ void SRFRS::FlashcardManager::addFlashcard(QSharedPointer<Flashcard> card)
         QTextStream stream(&cardsFile);
 
         stream << QString::number(card->getID()) + ";;";
-        stream << card->getFront() + ";;";
-        stream << card->getBack() + ";;";
         stream << card->getDeck() + ";;";
         stream << card->getDate().toString("dd/MM/yyyy");
         stream << endl;
 
         cardsFile.close();
+    }
+
+    QString front_file = QString::number(card->getID()) + ".front";
+    QString back_file = QString::number(card->getID()) + ".back";
+
+    // write to front file
+    QFile front(_dir + "/" + front_file);
+
+    if(front.open(QIODevice::WriteOnly)) {
+
+        QTextStream stream(&front);
+        QStringList frontParts = card->getFront();
+
+        for(int i = 0; i < frontParts.size(); ++i) {
+            if(!frontParts.at(i).isEmpty()) {
+                stream << frontParts.at(i) + "\n";
+            }
+        }
+
+        front.close();
+    }
+
+    // write to back file
+    QFile back(_dir + "/" + back_file);
+
+    if(back.open(QIODevice::WriteOnly)) {
+        QTextStream stream(&back);
+        QStringList backParts = card->getBack();
+
+        for(int i = 0; i < backParts.size(); ++i) {
+            if(!backParts.at(i).isEmpty()) {
+                stream << backParts.at(i) + "\n";
+            }
+        }
+
+        back.close();
     }
 }
 
@@ -80,6 +144,18 @@ void SRFRS::FlashcardManager::setID(int index, int oldId, int id)
 
     // update .cards
     update(oldId, 0, QString::number(id));
+
+    // update front and back files
+    renameFiles(oldId, id);
+}
+
+void SRFRS::FlashcardManager::renameFiles(int oldId, int id)
+{
+    QFile front(_dir + "/" + QString::number(oldId) + ".front");
+    QFile back(_dir + "/" + QString::number(oldId) + ".back");
+
+    front.rename(_dir + "/" + QString::number(id) + ".front");
+    back.rename(_dir + "/" + QString::number(id) + ".back");
 }
 
 void SRFRS::FlashcardManager::removeFlashcard(int id)
@@ -115,6 +191,13 @@ void SRFRS::FlashcardManager::removeFlashcard(int id)
 
         cardsFile.close();
     }
+
+    // remove front and back files
+    QFile front(_dir + "/" + QString::number(id) + ".front");
+    QFile back(_dir + "/" + QString::number(id) + ".back");
+
+    front.remove();
+    back.remove();
 }
 
 QSharedPointer<SRFRS::Flashcard> SRFRS::FlashcardManager::getFlashcard(int id)
@@ -129,12 +212,14 @@ QSharedPointer<SRFRS::Flashcard> SRFRS::FlashcardManager::getFlashcard(int id)
 
 void SRFRS::FlashcardManager::update(int id, int index, QString after)
 {
-    // only 4 possible data entries: id, front, back, deck, date
-    // therefore index must be between 0 and 3
-    if(index < 0 || index > 3) {
+    // only 3 possible data entries: id, deck, date created
+    // therefore index must be between 0 and 2
+    if(index < 0 || index > 2) {
         qDebug() << "index out of range!! " + QString::number(index) + " id: " + QString::number(id);
         return;
     }
+
+    // TODO: update front/back files
 
     // update cards file
     QFile deckFile(_dir + "/.cards");

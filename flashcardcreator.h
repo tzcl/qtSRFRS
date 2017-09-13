@@ -2,7 +2,9 @@
 #define FLASHCARDCREATOR_H
 
 #include <QDialog>
+#include <QString>
 #include <QStringList>
+#include <QTextEdit>
 
 #include "flashcard.h"
 #include "mainwindow.h"
@@ -24,7 +26,14 @@ public:
 private slots:
     void on_buttonBox_accepted();
 
+    void on_txt_front_textChanged();
+
+    void on_txt_back_textChanged();
+
 private:
+    void validateInputs();
+    bool validText(QTextEdit *edit);
+
     Ui::FlashcardCreator *ui;
 };
 

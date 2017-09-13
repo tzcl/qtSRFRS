@@ -13,6 +13,7 @@ DeckCreator::DeckCreator(QWidget *parent) :
     setWindowTitle("SRFRS");
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+    ui->buttonBox->setToolTip("Deck name can't be empty");
     ui->txt_name->setStyleSheet("background: red");
 
     ui->txt_name->setFocus();
@@ -49,5 +50,6 @@ void DeckCreator::on_txt_name_textEdited(const QString &string)
         } else {
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
             ui->txt_name->setStyleSheet("");
+            ui->buttonBox->setToolTip("");
         }
 }

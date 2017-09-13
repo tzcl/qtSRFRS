@@ -73,7 +73,7 @@ public:
 
     // flashcard methods
 
-    void addFlashcard(int id, QString front, QString back, QString deck);
+    void addFlashcard(int id, QStringList front, QStringList back, QString deck);
 
     void addFlashcardToDeck(int id, QString deckName);
 

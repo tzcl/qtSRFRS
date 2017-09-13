@@ -366,7 +366,7 @@ void MainWindow::deck_delete(QString deckName)
     }
 }
 
-void MainWindow::addFlashcard(int id, QString front, QString back, QString deck)
+void MainWindow::addFlashcard(int id, QStringList front, QStringList back, QString deck)
 {
     auto card = QSharedPointer<SRFRS::Flashcard>::create(id, front, back, deck, QDate::currentDate());
 
@@ -379,7 +379,7 @@ void MainWindow::addFlashcard(int id, QString front, QString back, QString deck)
     // add to deck
     addFlashcardToDeck(id, deck);
 
-    // write to file here? deck stuff
+    // TODO: write to file here? deck stuff
 }
 
 void MainWindow::addFlashcardToDeck(int id, QString deckName)
@@ -407,7 +407,7 @@ void MainWindow::addFlashcardToTable(SRFRS::Flashcard card)
     int row = ui->flashcards_table->rowCount() - 1;
 
     ui->flashcards_table->setItem(row, 0, new QTableWidgetItem(QString::number(card.getID())));
-    ui->flashcards_table->setItem(row, 1, new QTableWidgetItem(card.getFront()));
+    ui->flashcards_table->setItem(row, 1, new QTableWidgetItem(card.getFront().at(0)));
     ui->flashcards_table->setItem(row, 2, new QTableWidgetItem(card.getDeck()));
     ui->flashcards_table->setItem(row, 3, new QTableWidgetItem(card.getDate().toString("dd/MM/yyyy")));
 
@@ -510,8 +510,6 @@ void MainWindow::flashcard_delete(int ID)
 
         // remove flashcard
         _flashcardManager.removeFlashcard(ID);
-
-        // TODO: NEED TO REMOVE FILES ASSOCIATED WITH FLASHCARD
 
         // update flashcards table
         int row = getFlashcardRow(ID);

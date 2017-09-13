@@ -25,7 +25,10 @@ FlashcardCreator::FlashcardCreator(QStringList decks, QWidget *parent) :
     // give focus to deck chooser
     ui->cb_decks->setFocus();
 
-    // TODO: disable ok button until validated inputs
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+    ui->buttonBox->setToolTip("Flashcard can't be empty");
+    ui->txt_front->setStyleSheet("background: red");
+    ui->txt_back->setStyleSheet("background: red");
 }
 
 FlashcardCreator::~FlashcardCreator()
@@ -39,14 +42,55 @@ MainWindow* FlashcardCreator::getParent() {
 
 void FlashcardCreator::on_buttonBox_accepted()
 {
-    // save front/back changes
+    QStringList front = ui->txt_front->toPlainText().split("\n");
+    QStringList back = ui->txt_back->toPlainText().split("\n");
 
-    // TODO: validate input, NO ;; allowed
-    QString front = ui->txt_front->toPlainText();
-    QString back = ui->txt_back->toPlainText();
-
-    // write front, back to separate files
-
-    // 0 index or 1 index?
     getParent()->addFlashcard(getParent()->getFlashcardManager().getValidID(), front, back, ui->cb_decks->currentText());
+}
+
+bool FlashcardCreator::validText(QTextEdit *edit)
+{
+    // TODO: Validate flashcard doesn't already exist
+    // TODO: Adding images to flashcards
+
+    QString text = edit->toPlainText();
+
+    if(text.contains(";;")) {
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+        ui->buttonBox->setToolTip("Flashcard can't contain ;;");
+        edit->setStyleSheet("background: red");
+
+        return false;
+    } else if(text.isEmpty()) {
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+        ui->buttonBox->setToolTip("Flashcard can't be empty");
+        edit->setStyleSheet("background: red");
+
+        return false;
+    } else {
+        edit->setStyleSheet("");
+
+        return true;
+    }
+}
+
+void FlashcardCreator::validateInputs()
+{
+    bool frontValid = validText(ui->txt_front);
+    bool backValid = validText(ui->txt_back);
+
+    if(frontValid && backValid) {
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+        ui->buttonBox->setToolTip("");
+    }
+}
+
+void FlashcardCreator::on_txt_front_textChanged()
+{
+    validateInputs();
+}
+
+void FlashcardCreator::on_txt_back_textChanged()
+{
+    validateInputs();
 }
