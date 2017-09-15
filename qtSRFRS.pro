@@ -26,7 +26,8 @@ SOURCES += \
     deckeditor.cpp \
     deckrenamer.cpp \
     flashcardeditor.cpp \
-    flashcardmanager.cpp
+    flashcardmanager.cpp \
+    flashcardpreviewer.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,7 +41,8 @@ HEADERS += \
     deckeditor.h \
     deckrenamer.h \
     flashcardeditor.h \
-    flashcardmanager.h
+    flashcardmanager.h \
+    flashcardpreviewer.h
 
 FORMS += \
         mainwindow.ui \
@@ -49,7 +51,8 @@ FORMS += \
     deckcreator.ui \
     deckeditor.ui \
     deckrenamer.ui \
-    flashcardeditor.ui
+    flashcardeditor.ui \
+    flashcardpreviewer.ui
 
 RESOURCES += \
     res.qrc

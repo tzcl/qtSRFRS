@@ -26,6 +26,10 @@ public:
 
     void renameFiles(int oldId, int id);
 
+    void updateFront(int id, QString after);
+
+    void updateBack(int id, QString after);
+
     void update(int id, int index, QString after);
 
     QSharedPointer<Flashcard> getFlashcard(int id);

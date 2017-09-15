@@ -45,7 +45,6 @@ bool SRFRS::FlashcardManager::load()
 
                 while (!stream.atEnd()) {
                     QString text = stream.readLine();
-                    qDebug() << text;
                     frontText.append(text);
                 }
 
@@ -60,7 +59,6 @@ bool SRFRS::FlashcardManager::load()
 
                 while (!stream.atEnd()) {
                     QString text = stream.readLine();
-                    qDebug() << text;
                     backText.append(text);
                 }
 
@@ -208,6 +206,44 @@ QSharedPointer<SRFRS::Flashcard> SRFRS::FlashcardManager::getFlashcard(int id)
 
     qDebug() << "couldn't find flashcard :S in flashcardmanager getFlashcard!! UNDEFINED BEHAVIOUR AHEAD";
     return _cards[0];
+}
+
+void SRFRS::FlashcardManager::updateFront(int id, QString after)
+{
+    QFile front(_dir + "/" + QString::number(id) + ".front");
+
+    QStringList parts = after.split("\n");
+
+    if(front.open(QIODevice::WriteOnly)) {
+        QTextStream stream(&front);
+
+        for(int i = 0; i < parts.size(); ++i) {
+            if(parts.at(i) != "") {
+                stream << parts[i] + "\n";
+            }
+        }
+
+        front.close();
+    }
+}
+
+void SRFRS::FlashcardManager::updateBack(int id, QString after)
+{
+    QFile back(_dir + "/" + QString::number(id) + ".back");
+
+    QStringList parts = after.split("\n");
+
+    if(back.open(QIODevice::WriteOnly)) {
+        QTextStream stream(&back);
+
+        for(int i = 0; i < parts.size(); ++i) {
+            if(parts.at(i) != "") {
+                stream << parts[i] + "\n";
+            }
+        }
+
+        back.close();
+    }
 }
 
 void SRFRS::FlashcardManager::update(int id, int index, QString after)

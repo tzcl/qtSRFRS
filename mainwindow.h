@@ -77,6 +77,8 @@ public:
 
     void addFlashcardToDeck(int id, QString deckName);
 
+    void addFlashcardToTable(int row, SRFRS::Flashcard card);
+
     void addFlashcardToTable(SRFRS::Flashcard flashcard);
 
     void addFlashcardButton(int row, int id);

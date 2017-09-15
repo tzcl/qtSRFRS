@@ -10,6 +10,7 @@
 
 #include "flashcardcreator.h"
 #include "flashcardeditor.h"
+#include "flashcardpreviewer.h"
 
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
@@ -333,8 +334,10 @@ void MainWindow::deck_rename(QString deckName)
 
 void MainWindow::deck_edit(QString deckName)
 {
-    DeckEditor de(deckName, this);
+    DeckEditor de(_deckManager.getDeck(deckName), _flashcardManager.getFlashcards(), this);
     de.exec();
+
+    // update decks table
 }
 
 void MainWindow::deck_delete(QString deckName)
@@ -398,13 +401,9 @@ void MainWindow::addFlashcardToDeck(int id, QString deckName)
     }
 }
 
-void MainWindow::addFlashcardToTable(SRFRS::Flashcard card)
+void MainWindow::addFlashcardToTable(int row, SRFRS::Flashcard card)
 {
     ui->flashcards_table->setSortingEnabled(false);
-
-    ui->flashcards_table->setRowCount(ui->flashcards_table->rowCount() + 1);
-
-    int row = ui->flashcards_table->rowCount() - 1;
 
     ui->flashcards_table->setItem(row, 0, new QTableWidgetItem(QString::number(card.getID())));
     ui->flashcards_table->setItem(row, 1, new QTableWidgetItem(card.getFront().at(0)));
@@ -414,6 +413,13 @@ void MainWindow::addFlashcardToTable(SRFRS::Flashcard card)
     addFlashcardButton(row, card.getID());
 
     ui->flashcards_table->setSortingEnabled(true);
+}
+
+void MainWindow::addFlashcardToTable(SRFRS::Flashcard card)
+{
+    ui->flashcards_table->setRowCount(ui->flashcards_table->rowCount() + 1);
+    int row = ui->flashcards_table->rowCount() - 1;
+    addFlashcardToTable(row, card);
 }
 
 void MainWindow::addFlashcardButton(int row, int ID)
@@ -482,12 +488,17 @@ void MainWindow::resetFlashcardIDs()
 
 void MainWindow::flashcard_preview(int ID)
 {
-    qDebug() << "previewing";
+    FlashcardPreviewer preview(_dirPath, *_flashcardManager.getFlashcard(ID), this);
+    preview.exec();
 }
 
 void MainWindow::flashcard_edit(int ID)
 {
-    qDebug() << "editing!!";
+    FlashcardEditor editor(_dirPath, _flashcardManager.getFlashcard(ID), _flashcardManager.getFlashcards(), _deckManager.getDeckNames(), this);
+    editor.exec();
+
+    // update flashcards table
+    addFlashcardToTable(getFlashcardRow(ID), *_flashcardManager.getFlashcard(ID));
 }
 
 void MainWindow::flashcard_delete(int ID)
@@ -674,7 +685,7 @@ void MainWindow::on_create_flashcard_clicked()
         QMessageBox::warning(this, "SRFRS", "You need a deck to add flashcards to :-(\nPlease click OK and create a deck.");
         ui->tabWidget->setCurrentIndex(1);
     } else {
-        FlashcardCreator fc(deckNames, this);
+        FlashcardCreator fc(_dirPath, deckNames, _flashcardManager.getFlashcards(), this);
         fc.exec();
     }
 }
@@ -694,7 +705,7 @@ void MainWindow::on_decks_table_cellDoubleClicked(int row, int column)
     } else if(column == 1) {
         // edit
         QString deckName = ui->decks_table->item(row, 0)->text();
-        DeckEditor de(deckName, this);
+        DeckEditor de(_deckManager.getDeck(deckName), _flashcardManager.getFlashcards(), this);
         de.exec();
     }
 }

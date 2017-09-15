@@ -19,7 +19,11 @@ public:
 
     QStringList getFront() { return _frontText; }
 
+    void setFront(QStringList front) { _frontText = front; }
+
     QStringList getBack() { return _backText; }
+
+    void setBack(QStringList back) { _backText = back; }
 
     QString getDeck() { return _deck; }
 

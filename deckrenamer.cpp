@@ -6,7 +6,7 @@
 #include <QDebug>
 
 DeckRenamer::DeckRenamer(SRFRS::Deck &deck, QWidget *parent) :
-    QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
+    QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint),
     ui(new Ui::DeckRenamer),
     _deck(deck)
 {

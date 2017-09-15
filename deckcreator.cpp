@@ -5,7 +5,7 @@
 #include <QMessageBox>
 
 DeckCreator::DeckCreator(QWidget *parent) :
-    QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
+    QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint),
     ui(new Ui::DeckCreator)
 {
     ui->setupUi(this);
