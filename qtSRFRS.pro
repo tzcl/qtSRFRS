@@ -17,15 +17,42 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     accountmanager.cpp \
-    settings.cpp
+    settings.cpp \
+    flashcard.cpp \
+    deck.cpp \
+    deckmanager.cpp \
+    flashcardcreator.cpp \
+    deckcreator.cpp \
+    deckeditor.cpp \
+    deckrenamer.cpp \
+    flashcardeditor.cpp \
+    flashcardmanager.cpp \
+    flashcardpreviewer.cpp
 
 HEADERS += \
         mainwindow.h \
     accountmanager.h \
-    settings.h
+    settings.h \
+    flashcard.h \
+    deck.h \
+    deckmanager.h \
+    flashcardcreator.h \
+    deckcreator.h \
+    deckeditor.h \
+    deckrenamer.h \
+    flashcardeditor.h \
+    flashcardmanager.h \
+    flashcardpreviewer.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    settings.ui \
+    flashcardcreator.ui \
+    deckcreator.ui \
+    deckeditor.ui \
+    deckrenamer.ui \
+    flashcardeditor.ui \
+    flashcardpreviewer.ui
 
 RESOURCES += \
     res.qrc

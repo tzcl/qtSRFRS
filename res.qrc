@@ -2,5 +2,6 @@
     <qresource prefix="/icons">
         <file>cogs.png</file>
         <file>power-off.png</file>
+        <file>logo.png</file>
     </qresource>
 </RCC>

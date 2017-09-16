@@ -1,20 +1,16 @@
 #include "accountmanager.h"
 
 #include <QDebug>
-#include <QStandardPaths>
 #include <QFile>
 #include <QVector>
 #include <QMessageBox>
 
-// TODO: need to keep track of which user logged in
-
-SRFRS::AccountManager::AccountManager(int num) :
-    m_num(num),
-    dirPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)),
-    dir(QDir(dirPath))
+SRFRS::AccountManager::AccountManager(QString dirPath) :
+    _dirPath(dirPath),
+    _dir(QDir(dirPath))
 {
-    // make qtSRFRS dir in AppData/Local if it doesn't exist
-    if(!dir.exists()) { dir.mkpath(dirPath); }
+    // make qtSRFRS dir in "User/AppData/Local" if directory doesn't exist
+    if(!_dir.exists()) _dir.mkpath(_dirPath);
 }
 
 bool SRFRS::AccountManager::validLogin(QString username, QString password)
@@ -22,7 +18,7 @@ bool SRFRS::AccountManager::validLogin(QString username, QString password)
     password = hashPassword(password);
 
     // get user data from .users file
-    QFile userFile(dirPath + "/.users");
+    QFile userFile(_dirPath + "/.users");
 
     if(!userFile.exists()) {
 
@@ -60,7 +56,7 @@ bool SRFRS::AccountManager::validLogin(QString username, QString password)
 
 bool SRFRS::AccountManager::registerUser(QString username, QString password)
 {
-    QFile userFile(dirPath + "/.users");
+    QFile userFile(_dirPath + "/.users");
 
     if(!userFile.exists()) {
 
@@ -113,9 +109,9 @@ bool SRFRS::AccountManager::registerUser(QString username, QString password)
 
 bool SRFRS::AccountManager::deleteUser(QString username)
 {
-    QFile userFile(dirPath + "/.users");
-
     // remove user from .users file
+    QFile userFile(_dirPath + "/.users");
+
     if(userFile.open(QIODevice::ReadWrite)) {
         QString contents;
         QTextStream in(&userFile);
@@ -132,11 +128,12 @@ bool SRFRS::AccountManager::deleteUser(QString username)
         return false;
     }
 
-    return true;
-}
+    // remove user folder
+    QDir userDir(_dirPath + "/" + username);
 
-QString SRFRS::AccountManager::hashPassword(QString password)
-{
-    // hash password using Sha256
-    return QString(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex());
-}
+    if(userDir.exists()) {
+        _dir.rmdir(userDir.dirName());
+    }
+
+    return true;
+} 

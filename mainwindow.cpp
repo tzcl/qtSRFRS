@@ -1,23 +1,41 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include "accountmanager.h"
 #include "settings.h"
 
+#include "deckcreator.h"
+#include "deckeditor.h"
+#include "deckrenamer.h"
+
+#include "flashcardcreator.h"
+#include "flashcardeditor.h"
+#include "flashcardpreviewer.h"
+
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
-#include <QPropertyAnimation>
-#include <QTimer>
+#include <QRegularExpression>
+#include <QStandardPaths>
+#include <QDebug>
+#include <QMenu>
+#include <QAction>
+#include <QSignalMapper>
+#include <QSharedPointer>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    accountManager(SRFRS::AccountManager(1))
+    _username(""),
+    _dirPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)),
+    _accountManager(SRFRS::AccountManager(_dirPath))
 { 
     ui->setupUi(this);
 
     // make window non-resizable
     this->setFixedSize(960, 720);
     this->setWindowFlags(Qt::Window | Qt::MSWindowsFixedSizeDialogHint);
+
+    this->setWindowIcon(QIcon(":/icons/logo.png"));
 
     loginInitUI();
 
@@ -70,10 +88,6 @@ void MainWindow::loginInitUI()
     ui->lbl_create->move(centerX - (totalWidth / 2), ui->btn_login->geometry().bottom() + 20);
     ui->btn_create->move(ui->lbl_create->geometry().right(), ui->lbl_create->geometry().top() - 2);
 
-    // login when user presses enter
-    connect(ui->txt_username, SIGNAL(returnPressed()), ui->btn_login, SIGNAL(clicked()));
-    connect(ui->txt_password, SIGNAL(returnPressed()), ui->btn_login, SIGNAL(clicked()));
-
     // give username input focus
     ui->txt_username->setFocus();
 
@@ -97,16 +111,48 @@ void MainWindow::loginInitUI()
     totalWidth = ui->btn_signin->width() + ui->lbl_signin->width();
     ui->lbl_signin->move(centerX - (totalWidth / 2), ui->btn_register->geometry().bottom() + 20);
     ui->btn_signin->move(ui->lbl_signin->geometry().right(), ui->lbl_signin->geometry().top() - 2);
-
-    // register when user presses enter
-    connect(ui->txt_register_username, SIGNAL(returnPressed()), ui->btn_register, SIGNAL(clicked()));
-    connect(ui->txt_register_password, SIGNAL(returnPressed()), ui->btn_register, SIGNAL(clicked()));
 }
 
 void MainWindow::mainInitUI()
 {
     ui->btn_settings->setIcon(QIcon(":/icons/cogs.png"));
     ui->btn_logout->setIcon(QIcon(":/icons/power-off.png"));
+
+    // set up review table
+
+    // hide vertical headers
+    ui->review_table->verticalHeader()->hide();
+
+    // take care of resizing
+    ui->review_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->review_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->review_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+
+    // set up deck table
+
+    // hide vertical headers
+    ui->decks_table->verticalHeader()->hide();
+
+    // take care of resizing
+    ui->decks_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->decks_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->decks_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->decks_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+
+    //set up flashcard table
+
+    // hide vertical headers
+    ui->flashcards_table->verticalHeader()->hide();
+
+    // take care of resizing
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+
+    // give front column fixed size of 100
+    ui->flashcards_table->horizontalHeader()->resizeSection(1, 250);
 }
 
 void MainWindow::mainInitUI()
@@ -129,31 +175,474 @@ void MainWindow::moveToLogin() {
     ui->btn_login->setEnabled(false);
 }
 
+void MainWindow::moveToRegister() {
+    ui->txt_register_username->clear();
+    ui->txt_register_password->clear();
+    ui->txt_register_username->setFocus();
+
+    ui->stackedWidget->setCurrentIndex(0);
+    ui->loginStacked->setCurrentIndex(1);
+    ui->btn_register->setEnabled(false);
+}
+
+void MainWindow::login() {
+    // handle login stuff here
+    // e.g. loading from data base
+
+    // set username label
+    ui->lbl_username->setText("Hi, " + _username + "!");
+    ui->lbl_username->adjustSize();
+    ui->lbl_username->move(ui->btn_logout->x() + ui->btn_logout->width() - ui->lbl_username->width() - 8, 22);
+
+    // initialise deckManager
+    if(_deckManager.init(_username, _dirPath)) {
+        // add loaded decks to table
+        for(int i = 0; i < _deckManager.getDecks().size(); ++i) {
+            addDeckToTable(*_deckManager.getDecks()[i]);
+        }
+    } else {
+        qDebug() << "error initialising _deckManager!!";
+    }
+
+    // initialise flashcardManager
+    if(_flashcardManager.init(_username, _dirPath)) {
+        for(int i = 0; i < _flashcardManager.getFlashcards().size(); ++i) {
+            auto flashcard = _flashcardManager.getFlashcards()[i];
+
+            // add loaded flashcards to table
+            addFlashcardToTable(*flashcard);
+
+            // also add flashcards to decks
+            addFlashcardToDeck(i, flashcard->getDeck());
+        }
+    } else {
+        qDebug() << "error initialising _flashcardManager!!";
+    }
+
+    // move to mainPage
+    ui->stackedWidget->setCurrentIndex(1);
+    ui->tabWidget->setCurrentIndex(0);
+    ui->tabWidget->setFocus();
+}
+
+void MainWindow::logout() {
+
+    moveToLogin();
+}
+
+void MainWindow::addDeck(QString deckName)
+{
+    auto deck = QSharedPointer<SRFRS::Deck>::create(deckName, QDate::currentDate());
+
+    // add to deckmanager
+    _deckManager.addDeck(deck);
+
+    // add to table
+    addDeckToTable(*deck);
+}
+
+void MainWindow::addDeckToTable(int row, SRFRS::Deck deck)
+{
+    ui->decks_table->setSortingEnabled(false);
+
+    ui->decks_table->setItem(row, 0, new QTableWidgetItem(deck.getName()));
+    ui->decks_table->setItem(row, 1, new QTableWidgetItem(deck.getFlashcards()));
+    ui->decks_table->setItem(row, 2, new QTableWidgetItem(deck.getDate().toString("dd/MM/yyyy")));
+
+    addDeckButton(row, deck.getName());
+
+    ui->decks_table->setSortingEnabled(true);
+}
+
+void MainWindow::addDeckToTable(SRFRS::Deck deck)
+{
+    ui->decks_table->setRowCount(ui->decks_table->rowCount() + 1);
+    int row = ui->decks_table->rowCount() - 1;
+    addDeckToTable(row, deck);
+}
+
+void MainWindow::addDeckButton(int row, QString name)
+{
+    QToolButton *button = new QToolButton();
+    QMenu *menu = new QMenu(this);
+
+    QAction *action_rename = new QAction("Rename", this);
+    QAction *action_edit = new QAction("Edit", this);
+    QAction *action_delete = new QAction("Delete", this);
+
+    menu->addAction(action_rename);
+    menu->addAction(action_edit);
+    menu->addAction(action_delete);
+
+    button->setIcon(QIcon(":/icons/cogs.png"));
+    button->setCursor(Qt::PointingHandCursor);
+    button->setMenu(menu);
+    button->setPopupMode(QToolButton::InstantPopup);
+
+    QSignalMapper *mapper_rename = new QSignalMapper();
+    QSignalMapper *mapper_edit = new QSignalMapper();
+    QSignalMapper *mapper_delete = new QSignalMapper();
+
+    connect(action_rename, SIGNAL(triggered()), mapper_rename, SLOT(map()));
+    connect(action_edit, SIGNAL(triggered()), mapper_edit, SLOT(map()));
+    connect(action_delete, SIGNAL(triggered()), mapper_delete, SLOT(map()));
+
+    mapper_rename->setMapping(action_rename, name);
+    mapper_edit->setMapping(action_edit, name);
+    mapper_delete->setMapping(action_delete, name);
+
+    connect(mapper_rename, SIGNAL(mapped(QString)), this, SLOT(deck_rename(QString)));
+    connect(mapper_edit, SIGNAL(mapped(QString)), this, SLOT(deck_edit(QString)));
+    connect(mapper_delete, SIGNAL(mapped(QString)), this, SLOT(deck_delete(QString)));
+
+    ui->decks_table->setCellWidget(row, 3, button);
+}
+
+int MainWindow::getDeckRow(QString deckName)
+{
+    // init to invalid in case assignment doesn't occur
+    int row = -1;
+
+    for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+        if(ui->decks_table->item(i, 0)->text() == deckName) {
+            row = i;
+        }
+    }
+
+    return row;
+}
+
+void MainWindow::renameDeck(QString deckName, QSharedPointer<SRFRS::Deck> deck)
+{
+    // update deck manager
+    _deckManager.renameDeck(deckName, deck->getName());
+
+    // update decks table
+    int row = getDeckRow(deckName);
+
+    // only if valid row
+    if(row != -1) {
+        // write new name
+        ui->decks_table->item(row, 0)->setText(deck->getName());
+        // reset button
+        addDeckButton(row, deck->getName());
+    }
+
+    // update flashcards
+    for(int i = 0; i < deck->getVector().size(); ++i) {
+        // write to file
+        int id = deck->getVector()[i]->getID();
+        deck->getVector()[i]->setDeck(deck->getName());
+        _flashcardManager.update(id, 1, deck->getName());
+
+        // update flashcards table
+        int row = getFlashcardRow(id);
+        if(row != -1) {
+            ui->flashcards_table->item(row, 2)->setText(deck->getName());
+        }
+    }
+}
+
+void MainWindow::deck_rename(QString deckName)
+{
+    auto deck = _deckManager.getDeck(deckName);
+
+    DeckRenamer renamer(deck, this);
+    renamer.exec();
+
+    renameDeck(deckName, deck);
+}
+
+void MainWindow::deck_edit(QString deckName)
+{
+    auto deck = _deckManager.getDeck(deckName);
+    DeckEditor de(deck, this);
+    de.exec();
+
+    // update decks table
+    addDeckToTable(getDeckRow(deckName), *deck);
+
+    // write to file
+    _deckManager.update(deckName, 0, deck->getName());
+}
+
+void MainWindow::deck_delete(QString deckName)
+{
+    // warn user before deleting
+    if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Are you sure you want to delete your deck \"" + deckName + "\"?\nThis will also delete all the flashcards in your deck.", QMessageBox::Yes|QMessageBox::No, this).exec())
+    {
+        // remove flashcards
+        auto deck = _deckManager.getDeck(deckName);
+
+        // delete flashcards
+        for(int i = 0; i < deck->getVector().size(); ++i) {
+            int id = deck->getVector()[i]->getID();
+            _flashcardManager.removeFlashcard(id);
+
+            // update flashcards table
+            ui->flashcards_table->removeRow(getFlashcardRow(id));
+        }
+
+        // reset flashcard IDs
+        resetFlashcardIDs();
+
+        // remove deck
+        _deckManager.removeDeck(deckName);
+
+        // remove from decks table
+        int row = getDeckRow(deckName);
+        ui->decks_table->removeRow(row);
+    }
+}
+
+void MainWindow::addFlashcard(int id, QStringList front, QStringList back, QString deck)
+{
+    auto card = QSharedPointer<SRFRS::Flashcard>::create(id, front, back, deck, QDate::currentDate());
+
+    // add to flashcard manager
+    _flashcardManager.addFlashcard(card);
+
+    // add to table
+    addFlashcardToTable(*card);
+
+    // add to deck
+    addFlashcardToDeck(id, deck);
+}
+
+void MainWindow::addFlashcardToDeck(int id, QString deckName)
+{
+    // add flashcard to deck's flashcard vector
+    auto deck = _deckManager.getDeck(deckName);
+
+    // use id to identify which card to add
+    deck->addCard(_flashcardManager.getFlashcard(id));
+
+    // update decks table
+    for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+        if(ui->decks_table->item(i, 0)->text() == deckName) {
+            ui->decks_table->item(i, 1)->setText(deck->getFlashcards());
+        }
+    }
+}
+
+void MainWindow::addFlashcardToTable(int row, SRFRS::Flashcard card)
+{
+    ui->flashcards_table->setSortingEnabled(false);
+
+    ui->flashcards_table->setItem(row, 0, new QTableWidgetItem(QString::number(card.getID())));
+    ui->flashcards_table->setItem(row, 1, new QTableWidgetItem(card.getFront().at(0)));
+    ui->flashcards_table->setItem(row, 2, new QTableWidgetItem(card.getDeck()));
+    ui->flashcards_table->setItem(row, 3, new QTableWidgetItem(card.getDate().toString("dd/MM/yyyy")));
+
+    addFlashcardButton(row, card.getID());
+
+    ui->flashcards_table->setSortingEnabled(true);
+}
+
+void MainWindow::addFlashcardToTable(SRFRS::Flashcard card)
+{
+    ui->flashcards_table->setRowCount(ui->flashcards_table->rowCount() + 1);
+    int row = ui->flashcards_table->rowCount() - 1;
+    addFlashcardToTable(row, card);
+}
+
+void MainWindow::addFlashcardButton(int row, int ID)
+{
+    QToolButton *button = new QToolButton();
+    QMenu *menu = new QMenu(this);
+
+    QAction *action_preview = new QAction("Preview", this);
+    QAction *action_edit = new QAction("Edit", this);
+    QAction *action_delete = new QAction("Delete", this);
+
+    menu->addAction(action_preview);
+    menu->addAction(action_edit);
+    menu->addAction(action_delete);
+
+    button->setIcon(QIcon(":/icons/cogs.png"));
+    button->setCursor(Qt::PointingHandCursor);
+    button->setMenu(menu);
+    button->setPopupMode(QToolButton::InstantPopup);
+
+    QSignalMapper *mapper_preview = new QSignalMapper();
+    QSignalMapper *mapper_edit = new QSignalMapper();
+    QSignalMapper *mapper_delete = new QSignalMapper();
+
+    connect(action_preview, SIGNAL(triggered()), mapper_preview, SLOT(map()));
+    connect(action_edit, SIGNAL(triggered()), mapper_edit, SLOT(map()));
+    connect(action_delete, SIGNAL(triggered()), mapper_delete, SLOT(map()));
+
+    mapper_preview->setMapping(action_preview, ID);
+    mapper_edit->setMapping(action_edit, ID);
+    mapper_delete->setMapping(action_delete, ID);
+
+    connect(mapper_preview, SIGNAL(mapped(int)), this, SLOT(flashcard_preview(int)));
+    connect(mapper_edit, SIGNAL(mapped(int)), this, SLOT(flashcard_edit(int)));
+    connect(mapper_delete, SIGNAL(mapped(int)), this, SLOT(flashcard_delete(int)));
+
+    ui->flashcards_table->setCellWidget(row, 4, button);
+}
+
+int MainWindow::getFlashcardRow(int id)
+{
+    // init to invalid in case assignment doesn't occur
+    int row = -1;
+
+    for(int i = 0; i < ui->flashcards_table->rowCount(); ++i) {
+        if(ui->flashcards_table->item(i, 0)->text() == QString::number(id)) {
+            row = i;
+        }
+    }
+
+    return row;
+}
+
+void MainWindow::resetFlashcardIDs()
+{
+    for(int i = 0; i < _flashcardManager.getFlashcards().size(); ++i) {
+        int row = getFlashcardRow(_flashcardManager.getFlashcards()[i]->getID());
+        int oldId = ui->flashcards_table->item(row, 0)->text().toInt();
+
+        _flashcardManager.setID(i, oldId, i);
+        ui->flashcards_table->setItem(row, 0, new QTableWidgetItem(QString::number(i)));
+
+        addFlashcardButton(row, i);
+    }
+}
+
+void MainWindow::flashcard_preview(int ID)
+{
+    FlashcardPreviewer preview(_dirPath, *_flashcardManager.getFlashcard(ID), this);
+    preview.exec();
+}
+
+void MainWindow::flashcard_edit(int ID)
+{
+    FlashcardEditor editor(_dirPath, _flashcardManager.getFlashcard(ID), _deckManager.getDeckNames(), this);
+    editor.exec();
+
+    // update flashcards table
+    addFlashcardToTable(getFlashcardRow(ID), *_flashcardManager.getFlashcard(ID));
+}
+
+void MainWindow::deleteFlashcard(int ID, QSharedPointer<SRFRS::Flashcard> card)
+{
+    //  remove from deck
+    auto deck = _deckManager.getDeck(card->getDeck());
+    deck->removeCard(card);
+
+    // update decks table
+    for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+        if(ui->decks_table->item(i, 0)->text() == deck->getName()) {
+            ui->decks_table->item(i, 1)->setText(deck->getFlashcards());
+        }
+    }
+
+    // remove flashcard
+    _flashcardManager.removeFlashcard(ID);
+
+    // update flashcards table
+    int row = getFlashcardRow(ID);
+    ui->flashcards_table->removeRow(row);
+
+    // reset IDs
+    resetFlashcardIDs();
+}
+
+void MainWindow::flashcard_delete(int ID)
+{
+    auto card = _flashcardManager.getFlashcard(ID);
+
+    // warn user before deleting
+    if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Are you sure you want to delete your flashcard (ID: " + QString::number(ID) + ")?\nThis will remove it from your deck, \"" + card->getDeck() + "\".", QMessageBox::Yes|QMessageBox::No, this).exec())
+    {
+        deleteFlashcard(ID, card);
+    }
+}
+
+void MainWindow::updateTables()
+{
+    // update decks
+    for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+        QString deckName = ui->decks_table->item(i, 0)->text();
+        addDeckToTable(i, *_deckManager.getDeck(deckName));
+    }
+
+    // update flashcards
+    for(int i = 0; i < ui->flashcards_table->rowCount(); ++i) {
+        int id = ui->flashcards_table->item(i, 0)->text().toInt();
+        addFlashcardToTable(i, *_flashcardManager.getFlashcard(id));
+    }
+}
+
 void MainWindow::on_btn_login_clicked()
 {
-    // want to transition to main page
-    QMessageBox::information(this, "Login Test", "Login successful? :-)");
+    _username = ui->txt_username->text();
+    QString password = ui->txt_password->text();
 
-        // set username label
-        ui->lbl_username->setText(username);
+    // reset login page
+    ui->txt_username->clear();
+    ui->txt_password->clear();
+    ui->txt_username->setFocus();
+    ui->btn_login->setEnabled(false);
+
+    // validate inputs, username or password cannot be empty
+    if(_accountManager.validLogin(_username, password)) {
+
+        login();
 
     ui->lbl_username->setText(ui->txt_username->text());
     ui->tabWidget->setFocus();
 
-    // clear lineEdits?
+        // login failed, tell user
+        if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Your username or password was wrong :-(\nDo you need to create an account?", QMessageBox::Yes|QMessageBox::No, this).exec())
+        {
+            moveToRegister();
+        }
+    }
 }
 
 void MainWindow::on_btn_logout_clicked()
 {
-    if (QMessageBox::Yes == QMessageBox(QMessageBox::Question, "SRFRS", "Are you sure you want to log out?", QMessageBox::Yes|QMessageBox::No).exec())
+    if (QMessageBox::Yes == QMessageBox(QMessageBox::Question, "SRFRS", "Are you sure you want to log out?", QMessageBox::Yes|QMessageBox::No, this).exec())
     {
-        // clean up log in form
-        ui->txt_username->clear();
-        ui->txt_password->clear();
-        ui->txt_username->setFocus();
+        logout();
+    }
+}
+
+void MainWindow::on_btn_create_clicked()
+{
+    moveToRegister();
+}
+
+void MainWindow::on_btn_signin_clicked()
+{
+    moveToLogin();
+}
+
+void MainWindow::on_btn_register_clicked()
+{
+    QString username = ui->txt_register_username->text();
+    QString password = ui->txt_register_password->text();
+    QRegularExpression invalidUsernameCharacters("([^A-Za-z0-9-_])");
+    QRegularExpression invalidPasswordCharacters("([^A-Za-z0-9-_!@#$%^&*])");
+
+    moveToRegister();
+
+    // test to see whether username/password contains invalid characters
+    if(username.contains(invalidUsernameCharacters) || password.contains(invalidPasswordCharacters)) {
+
+        QMessageBox::warning(this, "SRFRS", "Your username or password cannot contain punctuation or spaces.");
+
+        // check if either username or password are empty
+    } else if(username == "" || password == "") {
+
+        QMessageBox::warning(this, "SRFRS", "Your username or password cannot be empty.");
+
+    } else {
 
         // see if registration successful
-        if(accountManager.registerUser(username, password)) {
+        if(_accountManager.registerUser(username, password)) {
 
             // registration successful, tell user
             QMessageBox::information(this, "SRFRS", "Your account was registered :-)\nTry logging in.");
@@ -167,11 +656,65 @@ void MainWindow::on_btn_logout_clicked()
     }
 }
 
-void MainWindow::on_btn_create_clicked()
+// toggle login/register buttons if inputs are empty
+void MainWindow::on_txt_username_textEdited(const QString &arg1)
 {
-    // clear inputs?
-    ui->loginStacked->setCurrentIndex(1);
-    ui->txt_register_username->setFocus();
+    // enable button if neither textbox is empty
+    bool on = arg1 != "" && ui->txt_password->text() != "";
+    toggleButtonState(ui->btn_login, on);
+
+    if(on) {
+        // login when user presses enter
+        connect(ui->txt_username, SIGNAL(returnPressed()), ui->btn_login, SIGNAL(clicked()), Qt::UniqueConnection);
+    } else {
+        // disable pressing enter when button is disabled
+        disconnect(ui->txt_username, SIGNAL(returnPressed()), 0, 0);
+    }
+}
+
+void MainWindow::on_txt_password_textEdited(const QString &arg1)
+{
+    // enable button if neither textbox is empty
+    bool on = arg1 != "" && ui->txt_username->text() != "";
+    toggleButtonState(ui->btn_login, on);
+
+    if(on) {
+        // login when user presses enter
+        connect(ui->txt_password, SIGNAL(returnPressed()), ui->btn_login, SIGNAL(clicked()), Qt::UniqueConnection);
+    } else {
+        // disable pressing enter when button is disabled
+        disconnect(ui->txt_password, SIGNAL(returnPressed()), 0, 0);
+    }
+}
+
+void MainWindow::on_txt_register_username_textEdited(const QString &arg1)
+{
+    // enable button if neither textbox is empty
+    bool on = arg1 != "" && ui->txt_register_password->text() != "";
+    toggleButtonState(ui->btn_register, on);
+
+    if(on) {
+        // register when user presses enter
+        connect(ui->txt_register_username, SIGNAL(returnPressed()), ui->btn_register, SIGNAL(clicked()));
+    } else {
+        // disable pressing enter when button is disabled
+        disconnect(ui->txt_register_username, SIGNAL(returnPressed()), 0, 0);
+    }
+}
+
+void MainWindow::on_txt_register_password_textEdited(const QString &arg1)
+{
+    // enable button if neither textbox is empty
+    bool on = arg1 != "" && ui->txt_register_username->text() != "";
+    toggleButtonState(ui->btn_register, on);
+
+    if(on) {
+        // register when user presses enter
+        connect(ui->txt_register_password, SIGNAL(returnPressed()), ui->btn_register, SIGNAL(clicked()), Qt::UniqueConnection);
+    } else {
+        // disable pressing enter when button is disabled
+        disconnect(ui->txt_register_password, SIGNAL(returnPressed()), 0, 0);
+    }
 }
 
 void MainWindow::on_btn_signin_clicked()
@@ -179,4 +722,36 @@ void MainWindow::on_btn_signin_clicked()
     // clear inputs?
     ui->txt_username->setFocus();
     ui->loginStacked->setCurrentIndex(0);
+}
+
+void MainWindow::on_create_flashcard_clicked()
+{
+    QStringList deckNames = _deckManager.getDeckNames();
+    if(deckNames.empty()) {
+        QMessageBox::warning(this, "SRFRS", "You need a deck to add flashcards to :-(\nPlease click OK and create a deck.");
+        ui->tabWidget->setCurrentIndex(1);
+    } else {
+        FlashcardCreator fc(_dirPath, deckNames, this);
+        fc.exec();
+    }
+}
+
+void MainWindow::on_create_deck_clicked()
+{
+    DeckCreator dc(this);
+    dc.exec();
+}
+
+void MainWindow::on_decks_table_cellDoubleClicked(int row, int column)
+{
+    // edit
+    QString deckName = ui->decks_table->item(row, 0)->text();
+    deck_edit(deckName);
+}
+
+void MainWindow::on_flashcards_table_cellDoubleClicked(int row, int column)
+{
+    // edit
+    int id = ui->flashcards_table->item(row, 0)->text().toInt();
+    flashcard_edit(id);
 }

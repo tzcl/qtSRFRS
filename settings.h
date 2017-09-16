@@ -21,7 +21,12 @@ public slots:
 
 private:
     Ui::Settings *ui;
-    MainWindow *parent;
+
+    /**
+     * @brief getParent: Returns a pointer to the main window.
+     * @return: A pointer to the main window instance.
+     */
+    MainWindow* getParent();
 };
 
 #endif // SETTINGS_H
