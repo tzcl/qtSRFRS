@@ -13,11 +13,22 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QToolButton {
+color: white;
+background: #4CAF50;
+border-radius: 0px;
+}
+
+QToolButton:hover {
+background: #43A047;
+}</string>
+  </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>430</y>
+     <y>440</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -76,28 +87,81 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
+  <widget class="QLabel" name="lbl_deck_cards">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>100</y>
+     <width>35</width>
+     <height>10</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Flashcards in deck</string>
+   </property>
+  </widget>
   <widget class="QTableWidget" name="flashcards_table">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>40</x>
      <y>140</y>
-     <width>580</width>
-     <height>260</height>
+     <width>560</width>
+     <height>290</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="sizeAdjustPolicy">
+    <enum>QAbstractScrollArea::AdjustIgnored</enum>
+   </property>
+   <property name="autoScroll">
+    <bool>true</bool>
+   </property>
+   <property name="editTriggers">
+    <set>QAbstractItemView::NoEditTriggers</set>
+   </property>
+   <property name="tabKeyNavigation">
+    <bool>false</bool>
+   </property>
+   <property name="selectionMode">
+    <enum>QAbstractItemView::NoSelection</enum>
+   </property>
+   <property name="selectionBehavior">
+    <enum>QAbstractItemView::SelectColumns</enum>
+   </property>
+   <property name="verticalScrollMode">
+    <enum>QAbstractItemView::ScrollPerPixel</enum>
+   </property>
+   <property name="horizontalScrollMode">
+    <enum>QAbstractItemView::ScrollPerPixel</enum>
+   </property>
+   <property name="sortingEnabled">
+    <bool>true</bool>
+   </property>
+   <attribute name="horizontalHeaderCascadingSectionResizes">
+    <bool>false</bool>
+   </attribute>
+   <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+    <bool>true</bool>
+   </attribute>
+   <attribute name="horizontalHeaderStretchLastSection">
+    <bool>false</bool>
+   </attribute>
+   <attribute name="verticalHeaderDefaultSectionSize">
+    <number>30</number>
+   </attribute>
    <column>
     <property name="text">
-     <string>New Column</string>
+     <string>ID</string>
     </property>
    </column>
    <column>
     <property name="text">
      <string>Front</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Difficulty</string>
     </property>
    </column>
    <column>
@@ -111,17 +175,17 @@
     </property>
    </column>
   </widget>
-  <widget class="QLabel" name="lbl_deck_cards">
+  <widget class="QPushButton" name="btn_add_card">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>110</y>
-     <width>35</width>
-     <height>10</height>
+     <x>480</x>
+     <y>95</y>
+     <width>80</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>Flashcards in deck</string>
+    <string>Add a flashcard</string>
    </property>
   </widget>
  </widget>

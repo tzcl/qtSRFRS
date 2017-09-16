@@ -11,10 +11,9 @@
 #include <QTextCursor>
 #include <QRegExp>
 
-FlashcardCreator::FlashcardCreator(QString dir, QStringList decks, QVector<QSharedPointer<SRFRS::Flashcard>> flashcards, QWidget *parent) :
+FlashcardCreator::FlashcardCreator(QString dir, QStringList decks, QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint),
     ui(new Ui::FlashcardCreator),
-    _flashcards(flashcards),
     _dir(dir + "/res/")
 {
     ui->setupUi(this);
@@ -39,8 +38,10 @@ FlashcardCreator::FlashcardCreator(QString dir, QStringList decks, QVector<QShar
     // set up validation
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     ui->buttonBox->setToolTip("Flashcard can't be empty");
+    ui->txt_front->setToolTip("Flashcard can't be empty");
     ui->txt_front->setStyleSheet("background: red");
     ui->txt_back->setStyleSheet("background: red");
+    ui->txt_back->setToolTip("Flashcard can't be empty");
 
     // disable image button initially
     ui->btn_add_image->setEnabled(false);
@@ -96,24 +97,28 @@ bool FlashcardCreator::validText(QTextEdit *edit)
     if(text.contains(";;")) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard can't contain ;;");
+        edit->setToolTip("Flashcard can't contain ;;");
         edit->setStyleSheet("background: red");
 
         return false;
     } else if(text.isEmpty()) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard can't be empty");
+        edit->setToolTip("Flashcard can't be empty");
         edit->setStyleSheet("background: red");
 
         return false;
     } else if(edit->document()->blockCount() > 12) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard is too long");
+        edit->setToolTip("Flashcard is too long");
         edit->setStyleSheet("background: red");
 
         return false;
     } else if(text.contains(imagePattern) && text != "[" + imagePattern.cap(1) + "]") {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard side can't contain both image and text");
+        edit->setToolTip("Flashcard side can't contain both image and text");
         edit->setStyleSheet("background: red");
 
         return false;
@@ -126,40 +131,7 @@ bool FlashcardCreator::validText(QTextEdit *edit)
 
 void FlashcardCreator::validateInputs()
 {
-    bool frontUnique = true;
-    bool backUnique = true;
-
-    QString frontText = ui->txt_front->toPlainText();
-    QString backText = ui->txt_back->toPlainText();
-
-    for(int i = 0; i < _flashcards.size(); ++i) {
-        if(_flashcards[i]->getFront().join("\n") == frontText) {
-            frontUnique = false;
-            break;
-        }
-
-        if(_flashcards[i]->getBack().join("\n") == backText) {
-            backUnique = false;
-            break;
-        }
-    }
-
-    bool frontValid = validText(ui->txt_front) && frontUnique;
-    bool backValid = validText(ui->txt_back) && backUnique;
-
-    if(!frontUnique) {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        ui->buttonBox->setToolTip("Flashcard front not unique");
-        ui->txt_front->setStyleSheet("background: red");
-    }
-
-    if(!backUnique) {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        ui->buttonBox->setToolTip("Flashcard back not unique");
-        ui->txt_back->setStyleSheet("background: red");
-    }
-
-    if(frontValid && backValid) {
+    if(validText(ui->txt_front) && validText(ui->txt_back)) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
         ui->buttonBox->setToolTip("");
     }

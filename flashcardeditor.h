@@ -17,7 +17,7 @@ class FlashcardEditor : public QDialog
     Q_OBJECT
 
 public:
-    explicit FlashcardEditor(QString dir, QSharedPointer<SRFRS::Flashcard> flashcard, QVector<QSharedPointer<SRFRS::Flashcard>> flashcards, QStringList decks, QWidget *parent = 0);
+    explicit FlashcardEditor(QString dir, QSharedPointer<SRFRS::Flashcard> flashcard, QStringList decks, QWidget *parent = 0);
     ~FlashcardEditor();
     MainWindow* getParent();
 
@@ -43,7 +43,6 @@ private:
     Ui::FlashcardEditor *ui;
 
     QSharedPointer<SRFRS::Flashcard> _flashcard;
-    QVector<QSharedPointer<SRFRS::Flashcard>> _flashcards;
 
     bool frontTarget;
     QString _dir;

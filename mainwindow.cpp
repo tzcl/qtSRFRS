@@ -240,13 +240,9 @@ void MainWindow::addDeck(QString deckName)
     addDeckToTable(*deck);
 }
 
-void MainWindow::addDeckToTable(SRFRS::Deck deck)
+void MainWindow::addDeckToTable(int row, SRFRS::Deck deck)
 {
     ui->decks_table->setSortingEnabled(false);
-
-    ui->decks_table->setRowCount(ui->decks_table->rowCount() + 1);
-
-    int row = ui->decks_table->rowCount() - 1;
 
     ui->decks_table->setItem(row, 0, new QTableWidgetItem(deck.getName()));
     ui->decks_table->setItem(row, 1, new QTableWidgetItem(deck.getFlashcards()));
@@ -255,6 +251,13 @@ void MainWindow::addDeckToTable(SRFRS::Deck deck)
     addDeckButton(row, deck.getName());
 
     ui->decks_table->setSortingEnabled(true);
+}
+
+void MainWindow::addDeckToTable(SRFRS::Deck deck)
+{
+    ui->decks_table->setRowCount(ui->decks_table->rowCount() + 1);
+    int row = ui->decks_table->rowCount() - 1;
+    addDeckToTable(row, deck);
 }
 
 void MainWindow::addDeckButton(int row, QString name)
@@ -308,15 +311,8 @@ int MainWindow::getDeckRow(QString deckName)
     return row;
 }
 
-void MainWindow::deck_rename(QString deckName)
+void MainWindow::renameDeck(QString deckName, QSharedPointer<SRFRS::Deck> deck)
 {
-    // need to update flashcards
-
-    auto deck = _deckManager.getDeck(deckName);
-
-    DeckRenamer renamer(*deck, this);
-    renamer.exec();
-
     // update deck manager
     _deckManager.renameDeck(deckName, deck->getName());
 
@@ -330,14 +326,43 @@ void MainWindow::deck_rename(QString deckName)
         // reset button
         addDeckButton(row, deck->getName());
     }
+
+    // update flashcards
+    for(int i = 0; i < deck->getVector().size(); ++i) {
+        // write to file
+        int id = deck->getVector()[i]->getID();
+        deck->getVector()[i]->setDeck(deck->getName());
+        _flashcardManager.update(id, 1, deck->getName());
+
+        // update flashcards table
+        int row = getFlashcardRow(id);
+        if(row != -1) {
+            ui->flashcards_table->item(row, 2)->setText(deck->getName());
+        }
+    }
+}
+
+void MainWindow::deck_rename(QString deckName)
+{
+    auto deck = _deckManager.getDeck(deckName);
+
+    DeckRenamer renamer(deck, this);
+    renamer.exec();
+
+    renameDeck(deckName, deck);
 }
 
 void MainWindow::deck_edit(QString deckName)
 {
-    DeckEditor de(_deckManager.getDeck(deckName), _flashcardManager.getFlashcards(), this);
+    auto deck = _deckManager.getDeck(deckName);
+    DeckEditor de(deck, this);
     de.exec();
 
     // update decks table
+    addDeckToTable(getDeckRow(deckName), *deck);
+
+    // write to file
+    _deckManager.update(deckName, 0, deck->getName());
 }
 
 void MainWindow::deck_delete(QString deckName)
@@ -381,8 +406,6 @@ void MainWindow::addFlashcard(int id, QStringList front, QStringList back, QStri
 
     // add to deck
     addFlashcardToDeck(id, deck);
-
-    // TODO: write to file here? deck stuff
 }
 
 void MainWindow::addFlashcardToDeck(int id, QString deckName)
@@ -494,11 +517,35 @@ void MainWindow::flashcard_preview(int ID)
 
 void MainWindow::flashcard_edit(int ID)
 {
-    FlashcardEditor editor(_dirPath, _flashcardManager.getFlashcard(ID), _flashcardManager.getFlashcards(), _deckManager.getDeckNames(), this);
+    FlashcardEditor editor(_dirPath, _flashcardManager.getFlashcard(ID), _deckManager.getDeckNames(), this);
     editor.exec();
 
     // update flashcards table
     addFlashcardToTable(getFlashcardRow(ID), *_flashcardManager.getFlashcard(ID));
+}
+
+void MainWindow::deleteFlashcard(int ID, QSharedPointer<SRFRS::Flashcard> card)
+{
+    //  remove from deck
+    auto deck = _deckManager.getDeck(card->getDeck());
+    deck->removeCard(card);
+
+    // update decks table
+    for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+        if(ui->decks_table->item(i, 0)->text() == deck->getName()) {
+            ui->decks_table->item(i, 1)->setText(deck->getFlashcards());
+        }
+    }
+
+    // remove flashcard
+    _flashcardManager.removeFlashcard(ID);
+
+    // update flashcards table
+    int row = getFlashcardRow(ID);
+    ui->flashcards_table->removeRow(row);
+
+    // reset IDs
+    resetFlashcardIDs();
 }
 
 void MainWindow::flashcard_delete(int ID)
@@ -508,26 +555,22 @@ void MainWindow::flashcard_delete(int ID)
     // warn user before deleting
     if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Are you sure you want to delete your flashcard (ID: " + QString::number(ID) + ")?\nThis will remove it from your deck, \"" + card->getDeck() + "\".", QMessageBox::Yes|QMessageBox::No, this).exec())
     {
-        //  remove from deck
-        auto deck = _deckManager.getDeck(card->getDeck());
-        deck->removeCard(_flashcardManager.getFlashcard(ID));
+        deleteFlashcard(ID, card);
+    }
+}
 
-        // update decks table
-        for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
-            if(ui->decks_table->item(i, 0)->text() == deck->getName()) {
-                ui->decks_table->item(i, 1)->setText(deck->getFlashcards());
-            }
-        }
+void MainWindow::updateTables()
+{
+    // update decks
+    for(int i = 0; i < ui->decks_table->rowCount(); ++i) {
+        QString deckName = ui->decks_table->item(i, 0)->text();
+        addDeckToTable(i, *_deckManager.getDeck(deckName));
+    }
 
-        // remove flashcard
-        _flashcardManager.removeFlashcard(ID);
-
-        // update flashcards table
-        int row = getFlashcardRow(ID);
-        ui->flashcards_table->removeRow(row);
-
-        // reset IDs
-        resetFlashcardIDs();
+    // update flashcards
+    for(int i = 0; i < ui->flashcards_table->rowCount(); ++i) {
+        int id = ui->flashcards_table->item(i, 0)->text().toInt();
+        addFlashcardToTable(i, *_flashcardManager.getFlashcard(id));
     }
 }
 
@@ -685,7 +728,7 @@ void MainWindow::on_create_flashcard_clicked()
         QMessageBox::warning(this, "SRFRS", "You need a deck to add flashcards to :-(\nPlease click OK and create a deck.");
         ui->tabWidget->setCurrentIndex(1);
     } else {
-        FlashcardCreator fc(_dirPath, deckNames, _flashcardManager.getFlashcards(), this);
+        FlashcardCreator fc(_dirPath, deckNames, this);
         fc.exec();
     }
 }
@@ -698,22 +741,14 @@ void MainWindow::on_create_deck_clicked()
 
 void MainWindow::on_decks_table_cellDoubleClicked(int row, int column)
 {
-    // TODO: change this (user testing --> familiarity)
-    if(column == 0) {
-        // rename
-        deck_rename(ui->decks_table->item(row, 0)->text());
-    } else if(column == 1) {
-        // edit
-        QString deckName = ui->decks_table->item(row, 0)->text();
-        DeckEditor de(_deckManager.getDeck(deckName), _flashcardManager.getFlashcards(), this);
-        de.exec();
-    }
+    // edit
+    QString deckName = ui->decks_table->item(row, 0)->text();
+    deck_edit(deckName);
 }
 
 void MainWindow::on_flashcards_table_cellDoubleClicked(int row, int column)
 {
-    // same as above: change depending on usability testing
-    if(column == 1 || column == 2) {
-
-    }
+    // edit
+    int id = ui->flashcards_table->item(row, 0)->text().toInt();
+    flashcard_edit(id);
 }

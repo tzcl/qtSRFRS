@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QStringList>
+#include <QSharedPointer>
 
 #include "deck.h"
 #include "mainwindow.h"
@@ -16,7 +17,7 @@ class DeckRenamer : public QDialog
     Q_OBJECT
 
 public:
-    explicit DeckRenamer(SRFRS::Deck &deck, QWidget *parent = 0);
+    explicit DeckRenamer(QSharedPointer<SRFRS::Deck> deck, QWidget *parent = 0);
     ~DeckRenamer();
 
 private slots:
@@ -29,7 +30,7 @@ private:
 
     Ui::DeckRenamer *ui;
 
-    SRFRS::Deck &_deck;
+    QSharedPointer<SRFRS::Deck> _deck;
 };
 
 #endif // DECKRENAMER_H

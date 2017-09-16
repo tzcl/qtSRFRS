@@ -265,7 +265,7 @@ void SRFRS::FlashcardManager::update(int id, int index, QString after)
         QString existingText;
         QTextStream stream(&deckFile);
 
-        while(!stream.atEnd()){
+        while(!stream.atEnd()) {
 
             QString line = stream.readLine();
             QStringList parts = line.split(";;");

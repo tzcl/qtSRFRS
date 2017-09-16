@@ -59,17 +59,23 @@ public:
      */
     QString getUser() { return _username; }
 
+    QString getPath() { return _dirPath; }
+
     Ui::MainWindow* getUI() { return ui; }
 
     // deck methods
 
     void addDeck(QString deckName);
 
+    void addDeckToTable(int row, SRFRS::Deck deck);
+
     void addDeckToTable(SRFRS::Deck deck);
 
     void addDeckButton(int row, QString deckName);
 
     int getDeckRow(QString deckName);
+
+    void renameDeck(QString deckName, QSharedPointer<SRFRS::Deck> deck);
 
     // flashcard methods
 
@@ -86,6 +92,10 @@ public:
     int getFlashcardRow(int id);
 
     void resetFlashcardIDs();
+
+    void deleteFlashcard(int ID, QSharedPointer<SRFRS::Flashcard> card);
+
+    void updateTables();
 
 private slots:
     void on_btn_login_clicked();

@@ -74,9 +74,6 @@ void SRFRS::DeckManager::addDeck(QSharedPointer<Deck> deck)
 
 void SRFRS::DeckManager::renameDeck(QString oldName, QString newName)
 {
-    // rename in decks
-    getDeck(oldName)->setName(newName);
-
     // rename in decks file
     update(oldName, 0, newName);
 }
@@ -135,7 +132,7 @@ QSharedPointer<SRFRS::Deck> SRFRS::DeckManager::getDeck(QString deckName)
         }
     }
 
-    qDebug() << "couldn't find deck :S in deckmanager getDeck!! UNDEFINED BEHAVIOUR AHEAD";
+    qDebug() << "couldn't find deck :S in deckmanager getDeck!! UNDEFINED BEHAVIOUR AHEAD. looking for:" << deckName;
     return _decks[0];
 }
 

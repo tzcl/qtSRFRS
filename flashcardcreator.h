@@ -21,7 +21,7 @@ class FlashcardCreator : public QDialog
     Q_OBJECT
 
 public:
-    explicit FlashcardCreator(QString dir, QStringList decks, QVector<QSharedPointer<SRFRS::Flashcard>> flashcards, QWidget *parent = 0);
+    explicit FlashcardCreator(QString dir, QStringList decks, QWidget *parent = 0);
     ~FlashcardCreator();
 
     MainWindow* getParent();
@@ -42,8 +42,6 @@ private:
     bool validText(QTextEdit *edit);
 
     Ui::FlashcardCreator *ui;
-
-    QVector<QSharedPointer<SRFRS::Flashcard>> _flashcards;
 
     bool frontTarget;
     QString _dir;
