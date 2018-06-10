@@ -18,7 +18,7 @@ public:
     ~FlashcardPreviewer();
 
 private slots:
-    void on_btn_toggle_clicked();
+    void on_btnToggle_clicked();
 
 private:
     Ui::FlashcardPreviewer *ui;

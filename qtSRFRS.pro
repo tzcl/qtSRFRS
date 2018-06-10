@@ -27,7 +27,9 @@ SOURCES += \
     deckrenamer.cpp \
     flashcardeditor.cpp \
     flashcardmanager.cpp \
-    flashcardpreviewer.cpp
+    flashcardpreviewer.cpp \
+    deckreviewer.cpp \
+    loginwindow.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -42,7 +44,10 @@ HEADERS += \
     deckrenamer.h \
     flashcardeditor.h \
     flashcardmanager.h \
-    flashcardpreviewer.h
+    flashcardpreviewer.h \
+    deckreviewer.h \
+    loginwindow.h \
+    complexalgorithm.h
 
 FORMS += \
         mainwindow.ui \
@@ -52,7 +57,9 @@ FORMS += \
     deckeditor.ui \
     deckrenamer.ui \
     flashcardeditor.ui \
-    flashcardpreviewer.ui
+    flashcardpreviewer.ui \
+    deckreviewer.ui \
+    loginwindow.ui
 
 RESOURCES += \
     res.qrc

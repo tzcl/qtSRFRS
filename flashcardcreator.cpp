@@ -24,31 +24,32 @@ FlashcardCreator::FlashcardCreator(QString dir, QStringList decks, QWidget *pare
     QDir directory(_dir);
     if(!directory.exists()) directory.mkpath(directory.path());
 
-    ui->lbl_deck->adjustSize();
+    ui->lblDeck->adjustSize();
 
-    ui->cb_decks->insertItems(0, decks);
+    ui->cbDecks->insertItems(0, decks);
 
     // disable tab as input, make it change text boxes
-    ui->txt_front->setTabChangesFocus(true);
-    ui->txt_back->setTabChangesFocus(true);
+    ui->txtFront->setTabChangesFocus(true);
+    ui->txtBack->setTabChangesFocus(true);
 
     // give focus to deck chooser
-    ui->cb_decks->setFocus();
+    ui->cbDecks->setFocus();
 
     // set up validation
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     ui->buttonBox->setToolTip("Flashcard can't be empty");
-    ui->txt_front->setToolTip("Flashcard can't be empty");
-    ui->txt_front->setStyleSheet("background: red");
-    ui->txt_back->setStyleSheet("background: red");
-    ui->txt_back->setToolTip("Flashcard can't be empty");
+
+    ui->txtFront->setToolTip("Flashcard can't be empty");
+    ui->txtFront->setStyleSheet("QTextEdit#txtFront { color: red }");
+    ui->txtBack->setStyleSheet("QTextEdit#txtBack { color: red }");
+    ui->txtBack->setToolTip("Flashcard can't be empty");
 
     // disable image button initially
-    ui->btn_add_image->setEnabled(false);
+    ui->btnAddImage->setEnabled(false);
 
     // set up event filter
-    ui->txt_front->installEventFilter(this);
-    ui->txt_back->installEventFilter(this);
+    ui->txtFront->installEventFilter(this);
+    ui->txtBack->installEventFilter(this);
 }
 
 FlashcardCreator::~FlashcardCreator()
@@ -62,18 +63,30 @@ MainWindow* FlashcardCreator::getParent() {
 
 bool FlashcardCreator::eventFilter(QObject *obj, QEvent *ev)
 {
-    if(ev->type() == ev->FocusIn && obj == ui->txt_front) {
+    if(ev->type() == ev->FocusIn && obj == ui->txtFront) {          // check if front text edit
+                                                                    // gains focus
+        // enable the add image button
+        ui->btnAddImage->setEnabled(true);
+        // target is front
         frontTarget = true;
-        ui->btn_add_image->setEnabled(true);
-    } else if(ev->type() == ev->FocusIn && obj == ui->txt_back) {
+    } else if(ev->type() == ev->FocusIn && obj == ui->txtBack) {    // check if back text edit
+                                                                    // gains focused
+        // enable the add image button
+        ui->btnAddImage->setEnabled(true);
+        // target is back
         frontTarget = false;
-        ui->btn_add_image->setEnabled(true);
-    } if(ev->type() == ev->FocusOut && obj == ui->txt_front) {
+    } if(ev->type() == ev->FocusOut && obj == ui->txtFront) {       // check if front text edit
+                                                                    // loses focus
+        // disable the add image button
+        ui->btnAddImage->setEnabled(false);
+        // target is front
         frontTarget = true;
-        ui->btn_add_image->setEnabled(false);
-    } else if(ev->type() == ev->FocusOut && obj == ui->txt_back) {
+    } else if(ev->type() == ev->FocusOut && obj == ui->txtBack) {   // check if back text edit
+                                                                    // loses focus
+        // disable the add image button
+        ui->btnAddImage->setEnabled(false);
+        // target is back
         frontTarget = false;
-        ui->btn_add_image->setEnabled(false);
     }
 
     return false;
@@ -81,15 +94,19 @@ bool FlashcardCreator::eventFilter(QObject *obj, QEvent *ev)
 
 void FlashcardCreator::on_buttonBox_accepted()
 {
-    QStringList front = ui->txt_front->toPlainText().split("\n");
-    QStringList back = ui->txt_back->toPlainText().split("\n");
+    // get flashcard front and back
+    QStringList front = ui->txtFront->toPlainText().split("\n");
+    QStringList back = ui->txtBack->toPlainText().split("\n");
 
-    getParent()->addFlashcard(getParent()->getFlashcardManager().getValidID(), front, back, ui->cb_decks->currentText());
+    // add new flashcard to system
+    getParent()->addFlashcard(getParent()->getFlashcardManager().getValidID(), front, back, ui->cbDecks->currentText());
 }
 
 bool FlashcardCreator::validText(QTextEdit *edit)
 {
+    // get text
     QString text = edit->toPlainText();
+    QString specifier = "#" + edit->objectName();
 
     QRegExp imagePattern = QRegExp("\\[((.*)\\.(jpg|png|gif))\\]");
     imagePattern.indexIn(text);
@@ -98,28 +115,28 @@ bool FlashcardCreator::validText(QTextEdit *edit)
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard can't contain ;;");
         edit->setToolTip("Flashcard can't contain ;;");
-        edit->setStyleSheet("background: red");
+        edit->setStyleSheet("QTextEdit" + specifier + "{ color: red }");
 
         return false;
     } else if(text.isEmpty()) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard can't be empty");
         edit->setToolTip("Flashcard can't be empty");
-        edit->setStyleSheet("background: red");
+        edit->setStyleSheet("QTextEdit" + specifier + "{ color: red }");
 
         return false;
     } else if(edit->document()->blockCount() > 12) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard is too long");
         edit->setToolTip("Flashcard is too long");
-        edit->setStyleSheet("background: red");
+        edit->setStyleSheet("QTextEdit" + specifier + "{ color: red }");
 
         return false;
     } else if(text.contains(imagePattern) && text != "[" + imagePattern.cap(1) + "]") {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard side can't contain both image and text");
         edit->setToolTip("Flashcard side can't contain both image and text");
-        edit->setStyleSheet("background: red");
+        edit->setStyleSheet("QTextEdit" + specifier + "{ color: red }");
 
         return false;
     } else {
@@ -131,26 +148,31 @@ bool FlashcardCreator::validText(QTextEdit *edit)
 
 void FlashcardCreator::validateInputs()
 {
-    if(validText(ui->txt_front) && validText(ui->txt_back)) {
+    // check if flashcard front and back are valid
+    bool front = validText(ui->txtFront);
+    bool back = validText(ui->txtBack);
+    if(front && back) {
+        // enable OK button
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
         ui->buttonBox->setToolTip("");
     }
 }
 
-void FlashcardCreator::on_txt_front_textChanged()
+void FlashcardCreator::on_txtFront_textChanged()
 {
     validateInputs();
 }
 
-void FlashcardCreator::on_txt_back_textChanged()
+void FlashcardCreator::on_txtBack_textChanged()
 {
     validateInputs();
 }
 
-void FlashcardCreator::on_btn_add_image_clicked()
+void FlashcardCreator::on_btnAddImage_clicked()
 {
+    // get target
     QTextEdit *_target;
-    frontTarget ? _target = ui->txt_front : _target = ui->txt_back;
+    frontTarget ? _target = ui->txtFront : _target = ui->txtBack;
 
     // choose image
     QString filePath = QFileDialog::getOpenFileName(this, "Open Image", QDir::homePath(), "Image (*.png *.jpg *.gif)");
@@ -158,7 +180,8 @@ void FlashcardCreator::on_btn_add_image_clicked()
     if(!filePath.isEmpty()) fileName = filePath.split("/").back();
 
     // copy image to res folder (in AppData/Local/qtSRFRS)
-    QFile::copy(filePath, _dir + fileName);
+    if(!filePath.isEmpty()) QFile::copy(filePath, _dir + fileName);
 
+    // insert image into target
     if(!fileName.isEmpty()) _target->setText(_target->toPlainText() + "[" + fileName + "]");
 }

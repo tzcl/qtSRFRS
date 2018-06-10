@@ -3,5 +3,6 @@
         <file>cogs.png</file>
         <file>power-off.png</file>
         <file>logo.png</file>
+        <file>tick.png</file>
     </qresource>
 </RCC>

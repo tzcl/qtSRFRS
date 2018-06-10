@@ -29,13 +29,13 @@ public:
 private slots:
     void on_buttonBox_accepted();
 
-    void on_txt_front_textChanged();
+    void on_txtFront_textChanged();
 
-    void on_txt_back_textChanged();
+    void on_txtBack_textChanged();
 
     bool eventFilter(QObject *obj, QEvent *ev);
 
-    void on_btn_add_image_clicked();
+    void on_btnAddImage_clicked();
 
 private:
     void validateInputs();

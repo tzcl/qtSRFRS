@@ -9,7 +9,7 @@
 #include <QMovie>
 
 FlashcardPreviewer::FlashcardPreviewer(QString dirPath, SRFRS::Flashcard flashcard, QWidget *parent) :
-    QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
+    QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint),
     ui(new Ui::FlashcardPreviewer),
     _show(false)
 {
@@ -18,55 +18,76 @@ FlashcardPreviewer::FlashcardPreviewer(QString dirPath, SRFRS::Flashcard flashca
     setWindowTitle("SRFRS");
 
     // init button to "show"
-    ui->btn_toggle->setText("Show");
-    ui->btn_toggle->adjustSize();
+    ui->btnToggle->setText("Show");
 
+    // set up flashcard front and back
     QString card_front = flashcard.getFront().join("\n");
     QString card_back = flashcard.getBack().join("\n");
 
+    // check if flashcard contains images
+
     QRegExp imagePattern = QRegExp("\\[((.*)\\.(jpg|png|gif))\\]");
+
+    // check front of flashcard
 
     imagePattern.indexIn(card_front);
     QString frontImage;
-    imagePattern.cap(1) == "" ? frontImage = "text" : frontImage = dirPath + "/res/" + imagePattern.cap(1);
+
+    // check if the image pattern returns any matches
+    if(imagePattern.cap(1) == "") {
+        // no matches, must be text
+        frontImage = "text";
+    } else {
+        // set frontImage to the match
+        frontImage = dirPath + "/res/" + imagePattern.cap(1);
+    }
+
+    // check if file format is gif
     if(imagePattern.cap(3) == "gif") frontImage = "gif";
 
-    QPixmap frontPixmap(frontImage);
-
     if(frontImage == "text") {
-        ui->lbl_front->setText(card_front);
-        ui->lbl_front->adjustSize();
+        ui->lblFront->setText(card_front);
     } else if(frontImage == "gif") {
         QMovie *movie = new QMovie(dirPath + "/res/" + imagePattern.cap(1));
-        ui->lbl_front->setMovie(movie);
+        ui->lblFront->setMovie(movie);
         movie->start();
     } else {
-        ui->lbl_front->setPixmap(frontPixmap);
-        ui->lbl_front->setMask(frontPixmap.mask());
+        QPixmap frontPixmap(frontImage);
+        ui->lblFront->setPixmap(frontPixmap);
+        ui->lblFront->setMask(frontPixmap.mask());
     }
+
+    // check back of flashcard
 
     imagePattern.indexIn(card_back);
     QString backImage = "text";
-    imagePattern.cap(1) == "" ? backImage = "text" : backImage = dirPath + "/res/" + imagePattern.cap(1);
-    if(imagePattern.cap(3) == "gif") backImage = "gif";
 
-    QPixmap backPixmap(backImage);
-
-    if(backImage == "text") {
-        ui->lbl_back->setText(card_back);
-        ui->lbl_back->adjustSize();
-    } else if(frontImage == "gif") {
-        QMovie *movie = new QMovie(dirPath + "/res/" + imagePattern.cap(1));
-        ui->lbl_front->setMovie(movie);
-        movie->start();
+    // check if image pattern returns any matches
+    if(imagePattern.cap(1) == "") {
+        // no match, must be text
+        backImage = "text";
     } else {
-        ui->lbl_back->setPixmap(backPixmap);
-        ui->lbl_back->setMask(backPixmap.mask());
+        // set backImage to the match
+        backImage = dirPath + "/res/" + imagePattern.cap(1);
     }
 
-    ui->lbl_back->setVisible(_show);
+    // check if file format is gif
+    if(imagePattern.cap(3) == "gif") backImage = "gif";
 
-    //
+    if(backImage == "text") {
+        ui->lblBack->setText(card_back);
+    } else if(backImage == "gif") {
+        QMovie *movie = new QMovie(dirPath + "/res/" + imagePattern.cap(1));
+        ui->lblBack->setMovie(movie);
+        movie->start();
+    } else {
+        QPixmap backPixmap(backImage);
+        ui->lblBack->setPixmap(backPixmap);
+        ui->lblBack->setMask(backPixmap.mask());
+    }
+
+    // init flashcard back to be invisible
+    ui->lblBack->setVisible(_show);
 }
 
 FlashcardPreviewer::~FlashcardPreviewer()
@@ -74,10 +95,14 @@ FlashcardPreviewer::~FlashcardPreviewer()
     delete ui;
 }
 
-void FlashcardPreviewer::on_btn_toggle_clicked()
+void FlashcardPreviewer::on_btnToggle_clicked()
 {
+    // toggle show state
     _show = !_show;
 
-    ui->lbl_back->setVisible(_show);
-    _show ? ui->btn_toggle->setText("Hide") : ui->btn_toggle->setText("Show");
+    // set visibility state of flashcard back to _show
+    ui->lblBack->setVisible(_show);
+
+    // if _show, set button text to "hide", else set button text to "show"
+    _show ? ui->btnToggle->setText("Hide") : ui->btnToggle->setText("Show");
 }

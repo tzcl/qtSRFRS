@@ -31,6 +31,7 @@ bool SRFRS::DeckManager::load()
 {
     QFile deckFile(_dir + "/.decks");
 
+    // if deckFile doesn't exist create it.
     if(!deckFile.exists()) {
         return deckFile.open(QIODevice::WriteOnly);
     }
@@ -41,7 +42,9 @@ bool SRFRS::DeckManager::load()
             QStringList line = stream.readLine().split(";;");
 
             // get the deck data
-            auto deck = QSharedPointer<Deck>::create(line.at(0), QDate::fromString(line.at(1), "dd/MM/yyyy"));
+            auto deck = QSharedPointer<Deck>::create(line.at(0));
+
+            // add new deck to memory
             _decks.append(deck);
         }
 
@@ -65,21 +68,48 @@ void SRFRS::DeckManager::addDeck(QSharedPointer<Deck> deck)
 
         QTextStream stream(&deckFile);
 
-        stream << deck->getName() + ";;" << deck->getDate().toString("dd/MM/yyyy") << endl;
+        stream << deck->getName() << endl;
 
         deckFile.close();
     }
 }
 
-
 void SRFRS::DeckManager::renameDeck(QString oldName, QString newName)
 {
     // rename in decks file
-    update(oldName, 0, newName);
+    QFile deckFile(_dir + "/.decks");
+
+    if(deckFile.open(QIODevice::ReadWrite)) {
+
+        QString existingText;
+        QTextStream stream(&deckFile);
+
+        while(!stream.atEnd()){
+
+            QString line = stream.readLine();
+            QStringList parts = line.split(";;");
+
+            // find the line with matching name
+            if(parts.at(0) == oldName) {
+                // update name
+                parts[0] = newName;
+            }
+
+            line = parts.join(";;");
+
+            existingText.append(line + "\n");
+        }
+
+        deckFile.resize(0);
+        stream << existingText;
+
+        deckFile.close();
+    }
 }
 
 void SRFRS::DeckManager::removeDeck(QString deckName)
 {
+    // get deck
     auto p_deck = getDeck(deckName);
 
     // remove deck from _decks
@@ -101,12 +131,16 @@ void SRFRS::DeckManager::removeDeck(QString deckName)
 
             QStringList line = newContents.readLine().split(";;");
 
+            // add all existing lines except the line containing the deck to remove
             if(line.at(0) != deckName) {
                 oldContents.append(line.join(";;") + "\n");
             }
         }
 
+        // empty the deck file
         deckFile.resize(0);
+
+        // rewrite contents except for the line containing the deck to remove
         newContents << oldContents;
 
         deckFile.close();
@@ -117,7 +151,9 @@ QStringList SRFRS::DeckManager::getDeckNames()
 {
     QStringList result;
 
+    // iterate through decks
     for(int i = 0; i < _decks.size(); ++i) {
+        // add deck name to result
         result.append(_decks[i]->getName());
     }
 
@@ -126,7 +162,9 @@ QStringList SRFRS::DeckManager::getDeckNames()
 
 QSharedPointer<SRFRS::Deck> SRFRS::DeckManager::getDeck(QString deckName)
 {
+    // iterate through decks
     for(int i = 0; i < _decks.size(); ++i) {
+        // find deck with matching name
         if(_decks[i]->getName() == deckName) {
             return _decks[i];
         }
@@ -134,42 +172,4 @@ QSharedPointer<SRFRS::Deck> SRFRS::DeckManager::getDeck(QString deckName)
 
     qDebug() << "couldn't find deck :S in deckmanager getDeck!! UNDEFINED BEHAVIOUR AHEAD. looking for:" << deckName;
     return _decks[0];
-}
-
-void SRFRS::DeckManager::update(QString deckName, int index, QString after)
-{
-    // only 2 possible data entries: name, date last reviewed
-    // therefore index must be between 0 and 1
-    if(index < 0 || index > 1) {
-        qDebug() << "index out of range!! " + QString::number(index) + " deck: " + deckName;
-        return;
-    }
-
-    // update cards file
-    QFile deckFile(_dir + "/.decks");
-
-    if(deckFile.open(QIODevice::ReadWrite)) {
-
-        QString existingText;
-        QTextStream stream(&deckFile);
-
-        while(!stream.atEnd()){
-
-            QString line = stream.readLine();
-            QStringList parts = line.split(";;");
-
-            if(parts.at(0) == deckName) {
-                parts[index] = after;
-            }
-
-            line = parts.join(";;");
-
-            existingText.append(line + "\n");
-        }
-
-        deckFile.resize(0);
-        stream << existingText;
-
-        deckFile.close();
-    }
 }

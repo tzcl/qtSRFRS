@@ -15,6 +15,7 @@ SRFRS::AccountManager::AccountManager(QString dirPath) :
 
 bool SRFRS::AccountManager::validLogin(QString username, QString password)
 {
+    // hash the password
     password = hashPassword(password);
 
     // get user data from .users file
@@ -22,7 +23,7 @@ bool SRFRS::AccountManager::validLogin(QString username, QString password)
 
     if(!userFile.exists()) {
 
-        // no users exist yet
+        // no users exist yet, login cannot be valid
         return false;
 
     } else {
@@ -59,19 +60,20 @@ bool SRFRS::AccountManager::registerUser(QString username, QString password)
     QFile userFile(_dirPath + "/.users");
 
     if(!userFile.exists()) {
+        // no other users exist yet, can't compare username to anything
 
-        // file doesn't exist, therefore no need to compare usernames
+        // append user to .users file
         if (userFile.open(QIODevice::WriteOnly)) {
             QTextStream stream(&userFile);
 
-            // separate with whitespace
+            // separate username and password with whitespace
             stream << username + " " + hashPassword(password) << endl;
 
             userFile.close();
         }
     } else {
 
-        // file does exist, need to compare usernames before registering
+        // file does exist, need to compare username before registering
         QVector<QString> usernames;
 
         if(userFile.open(QIODevice::ReadOnly)) {
@@ -79,7 +81,7 @@ bool SRFRS::AccountManager::registerUser(QString username, QString password)
             while (!in.atEnd()) {
                 QString line = in.readLine();
 
-                // get the username
+                // get the existing user's username
                 line = line.split(" ").at(0);
                 usernames.append(line);
             }
@@ -92,13 +94,13 @@ bool SRFRS::AccountManager::registerUser(QString username, QString password)
             if(usernames.at(i) == username) return false;
         }
 
-        // also need to append new users, so old users are not over written
+        // append new user
         if (userFile.open(QIODevice::ReadWrite | QIODevice::Append)) {
 
             // write new user to .users file
             QTextStream stream(&userFile);
 
-            // separate with whitespace
+            // separate username and password with whitespace
             stream << username + " " + hashPassword(password) << endl;
 
             userFile.close();
@@ -117,22 +119,31 @@ bool SRFRS::AccountManager::deleteUser(QString username)
         QTextStream in(&userFile);
 
         while(!in.atEnd()) {
+            // read line
             QString line = in.readLine();
-            if(!line.contains(username)) contents.append(line + "\n");
+
+            // check if line contains username to delete
+            if(!line.contains(username)) {
+                // if line doesn't contain username, append it to contents
+                contents.append(line + "\n");
+            } // else ignore line
         }
 
+        // empty file
         userFile.resize(0);
+
+        // stream in contents
         in << contents;
         userFile.close();
     } else {
         return false;
     }
 
-    // remove user folder
+    // remove user folder and subfolders
     QDir userDir(_dirPath + "/" + username);
 
     if(userDir.exists()) {
-        _dir.rmdir(userDir.dirName());
+        userDir.removeRecursively();
     }
 
     return true;

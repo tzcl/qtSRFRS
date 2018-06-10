@@ -14,8 +14,8 @@ public:
 
     /**
      * @brief validLogin: Check whether the user inputs are valid.
-     * @param username: the username input by the user
-     * @param password: the password input by the user
+     * @param username: The username input by the user
+     * @param password: The password input by the user
      * @return: True if matching login details exist in the .users file and
      *          the .users file exists, false otherwise.
      */
@@ -25,8 +25,8 @@ public:
      * @brief registerUser: Try to create new user, username must be unique.
      *                      Assumes that inputs have been validated.
      *                      Writes the new user details to the .users file.
-     * @param username: new user username, must be unique
-     * @param password: new user password
+     * @param username: New user username, must be unique
+     * @param password: New user password
      * @return: False if username already exists, true otherwise.
      */
     bool registerUser(QString username, QString password);

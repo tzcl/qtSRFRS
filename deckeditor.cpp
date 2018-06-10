@@ -22,31 +22,28 @@ DeckEditor::DeckEditor(QSharedPointer<SRFRS::Deck> deck, QWidget *parent) :
 
     this->setWindowTitle("SRFRS");
 
-    ui->txt_name->setText(deck->getName());
+    // set up UI components
 
-    ui->btn_add_card->adjustSize();
-    ui->lbl_name->adjustSize();
-    ui->lbl_deck_cards->adjustSize();
+    ui->txtName->setText(deck->getName());
+
+    ui->lblName->adjustSize();
+    ui->lblDeckCards->adjustSize();
 
     //set up flashcard table
 
     // hide vertical headers
-    ui->flashcards_table->verticalHeader()->hide();
+    ui->flashcardsTable->verticalHeader()->hide();
 
     // take care of resizing
-    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
-    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    ui->flashcards_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    ui->flashcardsTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->flashcardsTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui->flashcardsTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->flashcardsTable->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
 
     // load deck flashcards into table
     for(int i = 0; i < deck->getVector().size(); ++i) {
         addFlashcardToTable(*deck->getVector()[i]);
     }
-
-    // TODO: get flashcard table working
-    // TODO: write changes to actual deck table, flashcard table
-    // TODO: double clicking on table
 }
 
 DeckEditor::~DeckEditor()
@@ -58,41 +55,81 @@ MainWindow* DeckEditor::getParent() {
     return dynamic_cast<MainWindow*>(parent());
 }
 
-void DeckEditor::on_txt_name_textEdited(const QString &string)
+void DeckEditor::on_txtName_textEdited(const QString &string)
 {
+    // validate deck name
+
+    // check if the text in txtName is different to the deck's current name
     if(string != _deck->getName()) {
-        ui->txt_name->setStyleSheet("background: yellow");
-        ui->txt_name->setToolTip("Value changed");
+
+        // set text colour to blue
+        ui->txtName->setStyleSheet("QLineEdit { color: blue }");
+        // update tool tip
+        ui->txtName->setToolTip("Value changed");
+
     } else {
-        ui->txt_name->setStyleSheet("");
-        ui->txt_name->setToolTip("");
+
+        // reset
+        ui->txtName->setStyleSheet("");
+        ui->txtName->setToolTip("");
     }
 
+    // get deck names
     QStringList decks = getParent()->getDeckManager().getDeckNames();
+
+    // remove the current deck name from deck names
+    // so the deck name isn't compared against itself
     decks.removeAll(_deck->getName());
 
+    // check if deck name is unique
     if(decks.contains(string)) {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        ui->txt_name->setStyleSheet("background: red");
-        ui->buttonBox->setToolTip("Deck name already taken");
-        ui->txt_name->setToolTip("Deck name already taken");
-    } else if(string == "") {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        ui->txt_name->setStyleSheet("background: red");
-        ui->buttonBox->setToolTip("Deck name can't be empty");
-        ui->txt_name->setToolTip("Deck name can't be empty");
-    } else if(string.contains(";;")) {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        ui->txt_name->setStyleSheet("background: red");
-        ui->buttonBox->setToolTip("Deck name can't contain ;;");
-        ui->txt_name->setToolTip("Deck name can't contain ;;");
-    } else {
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-        ui->buttonBox->setToolTip("");
 
-        if(ui->txt_name->styleSheet() != "background: yellow") {
-            ui->txt_name->setStyleSheet("");
-            ui->txt_name->setToolTip("");
+        // disable OK button
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
+        // change text colour to red
+        ui->txtName->setStyleSheet("QLineEdit { color: red }");
+
+        // update tooltips
+        ui->buttonBox->setToolTip("Deck name already taken");
+        ui->txtName->setToolTip("Deck name already taken");
+
+    } else if(string == "") {               // check if deck name is empty
+
+        // disable OK button
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
+        // change text colour to red
+        ui->txtName->setStyleSheet("QLineEdit { color: red }");
+
+        // update tool tips
+        ui->buttonBox->setToolTip("Deck name can't be empty");
+        ui->txtName->setToolTip("Deck name can't be empty");
+
+    } else if(string.contains(";;")) {      // check if deck name contains ";;"
+                                            // (";;" used as delimiter in .decks file)
+
+        // disable OK button
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
+        // change text colour to red
+        ui->txtName->setStyleSheet("QLineEdit { color: red }");
+
+        // update tool tips
+        ui->buttonBox->setToolTip("Deck name can't contain ;;");
+        ui->txtName->setToolTip("Deck name can't contain ;;");
+    } else {
+
+        // deck name is valid
+
+        // enable OK button
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+
+        if(ui->txtName->styleSheet() != "QLineEdit { color: blue }") {
+            // reset tooltips and text colour
+            ui->buttonBox->setToolTip("");
+            ui->txtName->setToolTip("");
+            ui->txtName->setStyleSheet("");
         }
     }
 }
@@ -102,8 +139,9 @@ int DeckEditor::getFlashcardRow(int id)
     // init to invalid in case assignment doesn't occur
     int row = -1;
 
-    for(int i = 0; i < ui->flashcards_table->rowCount(); ++i) {
-        if(ui->flashcards_table->item(i, 0)->text() == QString::number(id)) {
+    for(int i = 0; i < ui->flashcardsTable->rowCount(); ++i) {
+        // find the row with matching ID
+        if(ui->flashcardsTable->item(i, 0)->text() == QString::number(id)) {
             row = i;
         }
     }
@@ -114,54 +152,73 @@ int DeckEditor::getFlashcardRow(int id)
 void DeckEditor::resetIDs()
 {
     for(int i = 0; i < _deck->getVector().size(); ++i) {
+        // get flashcard ID
         int id = _deck->getVector()[i]->getID();
-        ui->flashcards_table->setItem(i, 0, new QTableWidgetItem(QString::number(id)));
+
+        // update flashcard table with new ID
+        ui->flashcardsTable->setItem(i, 0, new QTableWidgetItem(QString::number(id)));
+
+        // link flashcard button to new ID
         addFlashcardButton(i, id);
     }
 }
 
 void DeckEditor::addFlashcardToTable(int row, SRFRS::Flashcard card)
 {
-    ui->flashcards_table->setSortingEnabled(false);
+    ui->flashcardsTable->setSortingEnabled(false);
 
-    ui->flashcards_table->setItem(row, 0, new QTableWidgetItem(QString::number(card.getID())));
-    ui->flashcards_table->setItem(row, 1, new QTableWidgetItem(card.getFront().at(0)));
-    ui->flashcards_table->setItem(row, 2, new QTableWidgetItem(card.getDate().toString("dd/MM/yyyy")));
+    ui->flashcardsTable->setItem(row, 0, new QTableWidgetItem(QString::number(card.getID())));
+    ui->flashcardsTable->setItem(row, 1, new QTableWidgetItem(card.getFront().at(0)));
+    ui->flashcardsTable->setItem(row, 2, new QTableWidgetItem(card.getReviewDate().toString("dd/MM/yyyy")));
 
     addFlashcardButton(row, card.getID());
 
-    ui->flashcards_table->setSortingEnabled(true);
+    ui->flashcardsTable->setSortingEnabled(true);
 }
 
 void DeckEditor::addFlashcardToTable(SRFRS::Flashcard card)
 {
-    ui->flashcards_table->setRowCount(ui->flashcards_table->rowCount() + 1);
-    int row = ui->flashcards_table->rowCount() - 1;
+    ui->flashcardsTable->setRowCount(ui->flashcardsTable->rowCount() + 1);
+
+    // add a new row
+    int row = ui->flashcardsTable->rowCount() - 1;
+
+    // insert flashcard in new row
     addFlashcardToTable(row, card);
 }
 
 void DeckEditor::addFlashcardButton(int row, int id)
 {
+    // create new tool button
     QToolButton *button = new QToolButton();
+
+    // create new menu
     QMenu *menu = new QMenu(this);
 
+    // create actions
     QAction *action_preview = new QAction("Preview", this);
     QAction *action_edit = new QAction("Edit", this);
     QAction *action_delete = new QAction("Delete", this);
 
+    // add actions to menu
     menu->addAction(action_preview);
     menu->addAction(action_edit);
     menu->addAction(action_delete);
 
+    // set up tool button
     button->setIcon(QIcon(":/icons/cogs.png"));
     button->setCursor(Qt::PointingHandCursor);
+
+    // add menu to tool button
     button->setMenu(menu);
     button->setPopupMode(QToolButton::InstantPopup);
 
+    // set up mapping
     QSignalMapper *mapper_preview = new QSignalMapper();
     QSignalMapper *mapper_edit = new QSignalMapper();
     QSignalMapper *mapper_delete = new QSignalMapper();
 
+    // connect interaction with menu actions with flashcard ID
     connect(action_preview, SIGNAL(triggered()), mapper_preview, SLOT(map()));
     connect(action_edit, SIGNAL(triggered()), mapper_edit, SLOT(map()));
     connect(action_delete, SIGNAL(triggered()), mapper_delete, SLOT(map()));
@@ -174,19 +231,23 @@ void DeckEditor::addFlashcardButton(int row, int id)
     connect(mapper_edit, SIGNAL(mapped(int)), this, SLOT(flashcard_edit(int)));
     connect(mapper_delete, SIGNAL(mapped(int)), this, SLOT(flashcard_delete(int)));
 
-    ui->flashcards_table->setCellWidget(row, 3, button);
+    // add button to flashcard table
+    ui->flashcardsTable->setCellWidget(row, 3, button);
 }
 
 void DeckEditor::flashcard_preview(int ID)
 {
+    // open flashcard previewer form
     FlashcardPreviewer previewer(getParent()->getPath(), *getParent()->getFlashcardManager().getFlashcard(ID), getParent());
     previewer.exec();
 }
 
 void DeckEditor::flashcard_edit(int ID)
 {
+    // get flashcard with ID
     auto card = getParent()->getFlashcardManager().getFlashcard(ID);
 
+    // open flashcard editor form
     FlashcardEditor editor(getParent()->getPath(), card, QStringList(_deck->getName()), getParent());
     editor.exec();
 
@@ -206,41 +267,57 @@ void DeckEditor::flashcard_delete(int ID)
 
     // update table
     int row = getFlashcardRow(ID);
-    ui->flashcards_table->removeRow(row);
+    ui->flashcardsTable->removeRow(row);
 
+    // reset flashcard IDs
     resetIDs();
 }
 
-void DeckEditor::on_flashcards_table_cellDoubleClicked(int row, int column)
+void DeckEditor::on_flashcardsTable_cellDoubleClicked(int row, int column)
 {
-    int id = ui->flashcards_table->item(row, 0)->text().toInt();
-    flashcard_edit(id);
+    // get ID
+    int id = ui->flashcardsTable->item(row, 0)->text().toInt();
+
+    // open flashcard previewer for flashcard with ID
+    flashcard_preview(id);
 }
 
-void DeckEditor::on_btn_add_card_clicked()
+void DeckEditor::on_btnAddCard_clicked()
 {
+    // keep track of vector size
     int before = _deck->getVector().size();
 
+    // open flashcard creator form
     FlashcardCreator fc(getParent()->getPath(), QStringList(_deck->getName()), getParent());
     fc.exec();
 
-    // update table
+    // get vector size after
     int after = _deck->getVector().size();
+
+    // validate a new card has been added to the deck
     if(before < after) {
+        // get the flashcard (will be the most recent one in vector)
         auto card = _deck->getVector()[after - 1];
+
+        // add flashcard to table
         addFlashcardToTable(*card);
     }
 }
 
 void DeckEditor::on_buttonBox_accepted()
 {
-    // rename deck
+    // keep track of old name
     QString oldName = _deck->getName();
-    QString newName = ui->txt_name->text();
+
+    // get the new name
+    // (must be valid because otherwise the OK button would be disabled)
+    QString newName = ui->txtName->text();
+
+    // check if new name is different to old name
     if(oldName != newName) {
+
+        // update deck name
         _deck->setName(newName);
         getParent()->renameDeck(oldName, _deck);
     }
-
-    getParent()->updateTables();
 }

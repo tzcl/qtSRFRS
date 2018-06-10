@@ -5,6 +5,8 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QDebug>
+#include <QMessageBox>
+#include <QDate>
 
 FlashcardEditor::FlashcardEditor(QString dir, QSharedPointer<SRFRS::Flashcard> flashcard, QStringList decks, QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint),
@@ -18,35 +20,35 @@ FlashcardEditor::FlashcardEditor(QString dir, QSharedPointer<SRFRS::Flashcard> f
     setWindowTitle("SRFRS");
 
     // set up deck label
-    ui->lbl_deck->adjustSize();
+    ui->lblDeck->adjustSize();
 
     // set up combobox
-    ui->cb_decks->insertItems(0, decks);
+    ui->cbDecks->insertItems(0, decks);
 
     // disable tab as input, make it change text boxes
-    ui->txt_front->setTabChangesFocus(true);
-    ui->txt_back->setTabChangesFocus(true);
+    ui->txtFront->setTabChangesFocus(true);
+    ui->txtBack->setTabChangesFocus(true);
 
     // give focus to deck chooser
-    ui->cb_decks->setFocus();
+    ui->cbDecks->setFocus();
 
     // set up validation
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     ui->buttonBox->setToolTip("Flashcard can't be empty");
-    ui->txt_front->setStyleSheet("background: red");
-    ui->txt_back->setStyleSheet("background: red");
+    ui->txtFront->setStyleSheet("QTextEdit { color: red }");
+    ui->txtBack->setStyleSheet("QTextEdit { color: red }");
 
     // disable image button initially
-    ui->btn_add_image->setEnabled(false);
+    ui->btnAddImage->setEnabled(false);
 
     // set up event filter
-    ui->txt_front->installEventFilter(this);
-    ui->txt_back->installEventFilter(this);
+    ui->txtFront->installEventFilter(this);
+    ui->txtBack->installEventFilter(this);
 
     // init stuff to flashcard information
-    ui->cb_decks->setCurrentIndex(ui->cb_decks->findText(_flashcard->getDeck()));
-    ui->txt_front->setText(_flashcard->getFront().join("\n"));
-    ui->txt_back->setText(_flashcard->getBack().join("\n"));
+    ui->cbDecks->setCurrentIndex(ui->cbDecks->findText(_flashcard->getDeck()));
+    ui->txtFront->setText(_flashcard->getFront().join("\n"));
+    ui->txtBack->setText(_flashcard->getBack().join("\n"));
 }
 
 FlashcardEditor::~FlashcardEditor()
@@ -61,65 +63,101 @@ MainWindow* FlashcardEditor::getParent() {
 void FlashcardEditor::on_buttonBox_accepted()
 {
     // write to file
-    getParent()->getFlashcardManager().updateFront(_flashcard->getID(), ui->txt_front->toPlainText());
-    getParent()->getFlashcardManager().updateBack(_flashcard->getID(), ui->txt_back->toPlainText());
-    getParent()->getFlashcardManager().update(_flashcard->getID(), 1, ui->cb_decks->currentText());
+    getParent()->getFlashcardManager().updateFront(_flashcard->getID(), ui->txtFront->toPlainText());
+    getParent()->getFlashcardManager().updateBack(_flashcard->getID(), ui->txtBack->toPlainText());
+    getParent()->getFlashcardManager().update(_flashcard->getID(), 1, ui->cbDecks->currentText());
 
     // update flashcard
-    _flashcard->setFront(ui->txt_front->toPlainText().split("\n"));
-    _flashcard->setBack(ui->txt_back->toPlainText().split("\n"));
+    _flashcard->setFront(ui->txtFront->toPlainText().split("\n"));
+    _flashcard->setBack(ui->txtBack->toPlainText().split("\n"));
 
-    if(_flashcard->getDeck() != ui->cb_decks->currentText()) {
-        getParent()->getDeckManager().getDeck(_flashcard->getDeck())->removeCard(_flashcard);
-        _flashcard->setDeck(ui->cb_decks->currentText());
-        getParent()->getDeckManager().getDeck(_flashcard->getDeck())->addCard(_flashcard);
+    if(_flashcard->getDeck() != ui->cbDecks->currentText()) {
+
+        // validate changing deck will reset interval
+        if (QMessageBox::Yes == QMessageBox(QMessageBox::Warning, "SRFRS", "Changing decks will reset the review interval for this flashcard. Are you sure you want to continue?", QMessageBox::Yes|QMessageBox::No, getParent()).exec()) {
+            getParent()->getDeckManager().getDeck(_flashcard->getDeck())->removeCard(_flashcard);
+
+            _flashcard->setDeck(ui->cbDecks->currentText());
+            _flashcard->setReviewDate(QDate::currentDate());
+
+            // initialise initial interval and difficulty to 1 and 2.5 respectively
+            _flashcard->setRepetitions(0);
+            _flashcard->setInterval(1);
+            _flashcard->setDifficulty(2.5f);
+
+            // write to file
+            getParent()->getFlashcardManager().update(_flashcard->getID(), 2, _flashcard->getReviewDate().toString("dd/MM/yyyy"));
+            getParent()->getFlashcardManager().update(_flashcard->getID(), 3, QString::number(0));
+            getParent()->getFlashcardManager().update(_flashcard->getID(), 4, QString::number(1));
+            getParent()->getFlashcardManager().update(_flashcard->getID(), 5, QString::number(2.5f));
+
+            // add flashcard to deck
+            getParent()->getDeckManager().getDeck(_flashcard->getDeck())->addCard(_flashcard);
+        } else {
+            ui->cbDecks->setFocus();
+            return;
+        }
     }
-
-    getParent()->updateTables();
 
     done(QDialog::Accepted);
 }
 
-void FlashcardEditor::on_txt_front_textChanged()
+void FlashcardEditor::on_txtFront_textChanged()
 {
     validateInputs();
 }
 
-void FlashcardEditor::on_txt_back_textChanged()
+void FlashcardEditor::on_txtBack_textChanged()
 {
     validateInputs();
 }
 
-void FlashcardEditor::on_btn_add_image_clicked()
+void FlashcardEditor::on_btnAddImage_clicked()
 {
+    // get the target text edit
     QTextEdit *_target;
-    frontTarget ? _target = ui->txt_front : _target = ui->txt_back;
+    frontTarget ? _target = ui->txtFront : _target = ui->txtBack;
 
     // choose image
     QString filePath = QFileDialog::getOpenFileName(this, "Open Image", QDir::homePath(), "Image (*.png *.jpg *.gif)");
     QString fileName;
+
+    // get the file name
     if(!filePath.isEmpty()) fileName = filePath.split("/").back();
 
     // copy image to res folder (in AppData/Local/qtSRFRS)
-    QFile::copy(filePath, _dir + fileName);
+    if(!filePath.isEmpty()) QFile::copy(filePath, _dir + fileName);
 
+    // insert image into text edit
     if(!fileName.isEmpty()) _target->setText(_target->toPlainText() + "[" + fileName + "]");
 }
 
 bool FlashcardEditor::eventFilter(QObject *obj, QEvent *ev)
 {
-    if(ev->type() == ev->FocusIn && obj == ui->txt_front) {
+    if(ev->type() == ev->FocusIn && obj == ui->txtFront) {          // check if front text edit
+                                                                    // gains focus
+        // enable the add image button
+        ui->btnAddImage->setEnabled(true);
+        // target is front
         frontTarget = true;
-        ui->btn_add_image->setEnabled(true);
-    } else if(ev->type() == ev->FocusIn && obj == ui->txt_back) {
+    } else if(ev->type() == ev->FocusIn && obj == ui->txtBack) {    // check if back text edit
+                                                                    // gains focused
+        // enable the add image button
+        ui->btnAddImage->setEnabled(true);
+        // target is back
         frontTarget = false;
-        ui->btn_add_image->setEnabled(true);
-    } if(ev->type() == ev->FocusOut && obj == ui->txt_front) {
+    } if(ev->type() == ev->FocusOut && obj == ui->txtFront) {       // check if front text edit
+                                                                    // loses focus
+        // disable the add image button
+        ui->btnAddImage->setEnabled(false);
+        // target is front
         frontTarget = true;
-        ui->btn_add_image->setEnabled(false);
-    } else if(ev->type() == ev->FocusOut && obj == ui->txt_back) {
+    } else if(ev->type() == ev->FocusOut && obj == ui->txtBack) {   // check if back text edit
+                                                                    // loses focus
+        // disable the add image button
+        ui->btnAddImage->setEnabled(false);
+        // target is back
         frontTarget = false;
-        ui->btn_add_image->setEnabled(false);
     }
 
     return false;
@@ -127,27 +165,33 @@ bool FlashcardEditor::eventFilter(QObject *obj, QEvent *ev)
 
 void FlashcardEditor::validateInputs()
 {
-    QString frontText = ui->txt_front->toPlainText();
-    QString backText = ui->txt_back->toPlainText();
+    // get front and back text
+    QString frontText = ui->txtFront->toPlainText();
+    QString backText = ui->txtBack->toPlainText();
 
-    // check if any changes have occurred
+    // check if any changes to the flashcard front have occurred
     if(frontText != _flashcard->getFront().join("\n")) {
-        ui->txt_front->setStyleSheet("background: yellow");
-        ui->txt_front->setToolTip("Value changed");
+        ui->txtFront->setStyleSheet("QTextEdit { color: blue }");
+        ui->txtFront->setToolTip("Value changed");
     } else {
-        ui->txt_front->setStyleSheet("");
-        ui->txt_front->setToolTip("");
+        ui->txtFront->setStyleSheet("");
+        ui->txtFront->setToolTip("");
     }
 
+    // check if any changes to the flashcard back have occurred
     if(backText != _flashcard->getBack().join("\n")) {
-        ui->txt_back->setStyleSheet("background: yellow");
-        ui->txt_back->setToolTip("Value changed");
+        ui->txtBack->setStyleSheet("QTextEdit { color: blue }");
+        ui->txtBack->setToolTip("Value changed");
     } else {
-        ui->txt_back->setStyleSheet("");
-        ui->txt_back->setToolTip("");
+        ui->txtBack->setStyleSheet("");
+        ui->txtBack->setToolTip("");
     }
 
-    if(validText(ui->txt_front) && validText(ui->txt_back)) {
+    // check if flashcard front and back are valid
+    bool front = validText(ui->txtFront);
+    bool back = validText(ui->txtBack);
+    if(front && back) {
+        // enable OK button
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
         ui->buttonBox->setToolTip("");
     }
@@ -155,42 +199,50 @@ void FlashcardEditor::validateInputs()
 
 bool FlashcardEditor::validText(QTextEdit *edit)
 {
-    // validate text
+    // get text to validate
     QString text = edit->toPlainText();
 
     QRegExp imagePattern = QRegExp("\\[((.*)\\.(jpg|png|gif))\\]");
     imagePattern.indexIn(text);
 
+    // check if text contains ";;"
     if(text.contains(";;")) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard can't contain ;;");
         edit->setToolTip("Flashcard can't contain ;;");
-        edit->setStyleSheet("background: red");
+        edit->setStyleSheet("QTextEdit { color: red }");
 
         return false;
+
+    // check if text is empty
     } else if(text.isEmpty()) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard can't be empty");
         edit->setToolTip("Flashcard can't be empty");
-        edit->setStyleSheet("background: red");
+        edit->setStyleSheet("QTextEdit { color: red }");
 
         return false;
+
+    // check if text is longer than 12 lines
     } else if(edit->document()->blockCount() > 12) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard is too long");
         edit->setToolTip("Flashcard is too long");
-        edit->setStyleSheet("background: red");
+        edit->setStyleSheet("QTextEdit { color: red }");
 
         return false;
+
+    // check if text contains an image and text
     } else if(text.contains(imagePattern) && text != "[" + imagePattern.cap(1) + "]") {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         ui->buttonBox->setToolTip("Flashcard side can't contain both image and text");
         edit->setToolTip("Flashcard side can't contain both image and text");
-        edit->setStyleSheet("background: red");
+        edit->setStyleSheet("QTextEdit { color: red }");
 
         return false;
     } else {
-        if(edit->styleSheet() != "background: yellow") {
+        if(edit->styleSheet() != "QTextEdit { color: blue }") {
+            // reset stylesheet and tooltip
             edit->setStyleSheet("");
             edit->setToolTip("");
         }
@@ -200,16 +252,20 @@ bool FlashcardEditor::validText(QTextEdit *edit)
 
 void FlashcardEditor::on_buttonBox_rejected()
 {
+    // close this form
     done(QDialog::Rejected);
 }
 
-void FlashcardEditor::on_cb_decks_currentIndexChanged(const QString &string)
+void FlashcardEditor::on_cbDecks_currentIndexChanged(const QString &string)
 {
+    // check if selected deck is different to initial deck
     if(string != _flashcard->getDeck()) {
-        ui->cb_decks->setStyleSheet("background: yellow");
-        ui->cb_decks->setToolTip("Value changed");
+        //
+        ui->cbDecks->setStyleSheet("QComboBox { color: blue }");
+        ui->cbDecks->setToolTip("Value changed");
     } else {
-        ui->cb_decks->setStyleSheet("");
-        ui->cb_decks->setToolTip("");
+        // reset stylesheet and tool tip
+        ui->cbDecks->setStyleSheet("");
+        ui->cbDecks->setToolTip("");
     }
 }

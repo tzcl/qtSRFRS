@@ -14,17 +14,17 @@
    <string>Dialog</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QPushButton#btn_delete_account {
+   <string notr="true">QPushButton#btnDeleteAccount {
 color: white;
 background: #4CAF50;
 border-radius: 0px;
 }
 
-QPushButton#btn_delete_account:hover {
+QPushButton#btnDeleteAccount:hover {
 background: #43A047
 }
 
-QPushButton#btn_delete_account:disabled {
+QPushButton#btnDeleteAccount:disabled {
 background-color: rgb(204, 204, 204);
 }</string>
   </property>
@@ -44,7 +44,7 @@ background-color: rgb(204, 204, 204);
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="btn_delete_account">
+  <widget class="QPushButton" name="btnDeleteAccount">
    <property name="geometry">
     <rect>
      <x>100</x>

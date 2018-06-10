@@ -22,8 +22,9 @@ MainWindow* Settings::getParent() {
     return dynamic_cast<MainWindow*>(parent());
 }
 
-void Settings::on_btn_delete_account_clicked()
+void Settings::on_btnDeleteAccount_clicked()
 {
+    // make sure user wants to delete their account
     if (QMessageBox::Yes == QMessageBox(QMessageBox::Critical, "SRFRS", "Are you sure you want to delete your account?\nThis cannot be undone.", QMessageBox::Yes|QMessageBox::No, this).exec())
     {
         // get accountManager instance from the main window
@@ -33,6 +34,7 @@ void Settings::on_btn_delete_account_clicked()
             // close this settings dialog
             close();
 
+            // move to the login window
             getParent()->moveToLogin();
         }
     }

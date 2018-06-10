@@ -17,15 +17,11 @@ public:
     ~Settings();
 
 public slots:
-    void on_btn_delete_account_clicked();
+    void on_btnDeleteAccount_clicked();
 
 private:
     Ui::Settings *ui;
 
-    /**
-     * @brief getParent: Returns a pointer to the main window.
-     * @return: A pointer to the main window instance.
-     */
     MainWindow* getParent();
 };
 

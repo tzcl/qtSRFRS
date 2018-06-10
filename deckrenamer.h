@@ -23,7 +23,7 @@ public:
 private slots:
     void on_buttonBox_accepted();
 
-    void on_txt_name_textEdited(const QString &string);
+    void on_txtName_textEdited(const QString &string);
 
 private:
     MainWindow *getParent();

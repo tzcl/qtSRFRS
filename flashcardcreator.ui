@@ -13,6 +13,21 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton#btnAddImage {
+color: white;
+background: #4CAF50;
+border-radius: 0px;
+}
+
+QPushButton:hover#btnAddImage {
+background: #43A047
+}
+
+QPushButton:disabled#btnAddImage {
+background-color: rgb(204, 204, 204);
+}</string>
+  </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
@@ -29,7 +44,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="btn_add_image">
+  <widget class="QPushButton" name="btnAddImage">
    <property name="geometry">
     <rect>
      <x>490</x>
@@ -38,6 +53,9 @@
      <height>41</height>
     </rect>
    </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
    <property name="focusPolicy">
     <enum>Qt::NoFocus</enum>
    </property>
@@ -45,7 +63,7 @@
     <string>Insert image</string>
    </property>
   </widget>
-  <widget class="QLabel" name="lbl_deck">
+  <widget class="QLabel" name="lblDeck">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -69,7 +87,7 @@
     <string>DECK</string>
    </property>
   </widget>
-  <widget class="QComboBox" name="cb_decks">
+  <widget class="QComboBox" name="cbDecks">
    <property name="geometry">
     <rect>
      <x>120</x>
@@ -79,7 +97,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLabel" name="lbl_front_text">
+  <widget class="QLabel" name="lblFrontText">
    <property name="geometry">
     <rect>
      <x>40</x>
@@ -92,7 +110,7 @@
     <string>Front:</string>
    </property>
   </widget>
-  <widget class="QTextEdit" name="txt_front">
+  <widget class="QTextEdit" name="txtFront">
    <property name="geometry">
     <rect>
      <x>40</x>
@@ -102,7 +120,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QLabel" name="lbl_back_text">
+  <widget class="QLabel" name="lblBackText">
    <property name="geometry">
     <rect>
      <x>40</x>
@@ -115,7 +133,7 @@
     <string>Back:</string>
    </property>
   </widget>
-  <widget class="QTextEdit" name="txt_back">
+  <widget class="QTextEdit" name="txtBack">
    <property name="geometry">
     <rect>
      <x>40</x>
@@ -140,8 +158,8 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>cb_decks</tabstop>
-  <tabstop>btn_add_image</tabstop>
+  <tabstop>cbDecks</tabstop>
+  <tabstop>btnAddImage</tabstop>
  </tabstops>
  <resources/>
  <connections>
