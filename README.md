@@ -6,3 +6,5 @@ qtSRFRS is centered around the creation and review of decks of flashcards. As yo
 
 Inspired by Anki (https://apps.ankiweb.net/) and work by Piotr Wozniak (https://www.supermemo.com/english/ol/sm2.htm).
 
+# Screenshot
+![Screenshot](https://i.imgur.com/w8gGqbO.png)
